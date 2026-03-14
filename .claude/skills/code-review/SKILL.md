@@ -20,7 +20,7 @@ Dispatch the superpowers code-reviewer agent with Alder Grove-specific context.
    - `git log main..HEAD --oneline` — commits on this branch
    - `git diff main...HEAD --stat` — files changed
    - `git diff main...HEAD` — full diff
-3. **Find design spec**: Search `docs/superpowers/specs/` for matching spec
+3. **Find design spec**: Search `.docs/superpowers/specs/` for matching spec
 4. **Dispatch**: Send to superpowers:code-reviewer with context below
 
 ## Dispatch Context
@@ -30,7 +30,7 @@ Provide to the code-reviewer agent:
 ```
 What was implemented: $ARGUMENTS (or summary of branch changes)
 
-Plan/requirements: [design spec path or relevant CLAUDE.md sections]
+Plan/requirements: [design spec path or relevant repo instructions from CLAUDE.md/AGENTS.md]
 
 Alder Grove review criteria:
 1. Hexagonal architecture — domain has no framework imports, correct layer dependencies

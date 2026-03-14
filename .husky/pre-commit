@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+
+changed_files="$(git diff --cached --name-only --diff-filter=ACMR)"
+
+if ! printf '%s\n' "$changed_files" | grep -Eq '^(CLAUDE\.md|\.claude/)'; then
+  exit 0
+fi
+
+echo "Regenerating AI assistant configs..."
+pnpm ai:generate

@@ -32,8 +32,6 @@ feat(personas): add create persona form
 
 Introduces the persona creation form with name, role, and description
 fields. Validates required fields before submission.
-
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
 EOF
 )"
 ```
@@ -47,3 +45,4 @@ EOF
 - If a hook fails, fix the issue and create a NEW commit
 - Stage files by name, not with -A or .
 - If tests fail, do not commit — fix first
+- Add a `Co-Authored-By` trailer only if the user or environment explicitly requires it

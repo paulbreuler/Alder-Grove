@@ -144,6 +144,21 @@ docker compose up -d      # Start PostgreSQL
 | `/code-review`       | Dispatch superpowers code reviewer              |
 | `/audit`             | Full quality gate (arch + docs + tests)         |
 
+## AI Assistant Compatibility
+
+Config files for OpenAI Codex, Google Gemini, and GitHub Copilot are generated
+from the canonical `.claude/` sources.
+
+- **Codex**: `AGENTS.md` + `.agents/skills/*/SKILL.md`
+- **Gemini**: `GEMINI.md` + `.gemini/styleguide.md`
+- **Copilot**: `.github/copilot-instructions.md` + `.github/instructions/*.instructions.md`
+
+**Canonical source**: `.claude/` directory and this `CLAUDE.md` file.
+**Generator**: `scripts/generate-ai-configs.ts`
+
+Never hand-edit generated assistant config files. Update `.claude/` or
+`CLAUDE.md`, then run `pnpm ai:generate`.
+
 ## Agents
 
 | Agent              | Trigger                              |

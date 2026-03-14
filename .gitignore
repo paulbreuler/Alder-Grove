@@ -26,5 +26,8 @@ Thumbs.db
 *.swp
 *.swo
 
+# Husky runtime internals
+.husky/_
+
 # Docker volumes
 grove_data/

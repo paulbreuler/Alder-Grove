@@ -36,11 +36,11 @@ All must pass. Any failure = overall FAIL.
 
 ## Pass 3: Documentation Consistency
 
-- `CLAUDE.md` skills table matches actual skills in `.claude/skills/`
-- `CLAUDE.md` entity model matches database migrations
-- `ARCHITECTURE.md` tech stack matches actual dependencies
+- `CLAUDE.md` and `AGENTS.md` reflect the current project guidance
+- `.agents/skills/` bridges point to the current `.claude/skills/` source
+- `docs/architecture-reference.md` tech stack matches actual dependencies
 - Shell extension table matches registered extensions
-- Design specs in `docs/superpowers/specs/` reference existing features
+- Design specs in `.docs/superpowers/specs/` reference existing features
 
 ## Output
 
@@ -64,8 +64,8 @@ Pass 2: Build & Test
   RESULT: PASS
 
 Pass 3: Documentation Consistency
-  ✅ CLAUDE.md skills table current
-  ⚠️  ARCHITECTURE.md tech stack — missing Biome from table
+  ✅ CLAUDE.md and AGENTS.md current
+  ⚠️  docs/architecture-reference.md tech stack — missing Biome from table
   ✅ Extension table matches code
   RESULT: PASS (1 warning)
 

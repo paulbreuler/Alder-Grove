@@ -59,3 +59,17 @@ See `docs/architecture-reference.md` for the full technical reference.
 - `docs/prfaq.md` — Product vision
 - `docs/architecture-reference.md` — Tech stack, entity model, schema
 - `docs/architecture-flows.md` — Sequence diagrams, state machines (Mermaid)
+
+## AI Assistant Configs
+
+Assistant compatibility files for Codex, Gemini, and GitHub Copilot are
+generated from `CLAUDE.md` and `.claude/`.
+
+```bash
+pnpm ai:generate   # Regenerate assistant config files
+pnpm ai:check      # Fail if generated files are stale
+pnpm prepare       # Install Husky hooks if needed
+```
+
+Do not hand-edit `AGENTS.md`, `.agents/skills/*`, `GEMINI.md`, `.gemini/*`, or
+`.github/copilot-instructions.md`.

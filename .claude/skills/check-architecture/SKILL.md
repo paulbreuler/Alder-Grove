@@ -25,7 +25,7 @@ For each feature under `src/features/`:
 
 ### 2. API Dependency Direction
 
-In `src-api/src/`:
+In `crates/grove-api/src/`:
 
 - **Domain** must NOT import from `routes/`, `db/`, `auth/`, or `acp/`
 - **Domain** must NOT import Axum, sqlx, or HTTP types
@@ -48,17 +48,17 @@ In `src-api/src/`:
 
 ### 5. Multi-Tenant Isolation
 
-- Every SQL query in `src-api/src/db/` must include `workspace_id` in WHERE
+- Every SQL query in `crates/grove-api/src/` must include `workspace_id` in WHERE
 - Every API route must extract org_id/workspace_id from auth context
 - No queries that return data across workspace boundaries
 
 ### 6. Build Verification
 
 ```bash
-pnpm check     # TypeScript + ESLint
-pnpm test      # Vitest
-cargo build    # Rust workspace
-cargo test     # Rust tests
+pnpm check              # TypeScript + ESLint
+pnpm test               # Vitest
+cargo build --workspace # Rust workspace
+cargo test --workspace  # Rust tests
 ```
 
 ## Output
