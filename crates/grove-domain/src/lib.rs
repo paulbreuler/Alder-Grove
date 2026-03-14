@@ -4,5 +4,6 @@
 
 pub mod common;
 pub mod error;
+pub mod persona;
 pub mod repository;
 pub mod workspace;
