@@ -38,7 +38,7 @@ Tauri v2 desktop client + cloud-hosted Axum API, backed by PostgreSQL 18.
 
 ### Frontend (`src/`)
 
-React 19.2 + TypeScript in the Tauri webview. Hexagonal architecture per feature:
+React + TypeScript in the Tauri webview (dependencies added as features are built). Hexagonal architecture per feature:
 
 ```
 src/features/<feature>/
@@ -50,7 +50,7 @@ src/features/<feature>/
 
 ### Database
 
-PostgreSQL 18 with 19 tables: 11 content entities, 7 ACP (Agent Communication Protocol) entities, 1 CRDT sync table.
+PostgreSQL 18. Schema design targets 19 tables (11 content + 7 ACP + 1 CRDT sync) — migrations are added incrementally.
 
 See `docs/architecture-reference.md` for the full technical reference.
 

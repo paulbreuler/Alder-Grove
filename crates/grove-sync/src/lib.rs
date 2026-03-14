@@ -1,3 +1,4 @@
-//! Grove Sync — CRDT sync layer using Yrs (Rust port of Yjs).
+//! Grove Sync — CRDT sync layer.
 //!
-//! Provides document management, sync server, awareness protocol, and persistence.
+//! Will provide document management, sync server, awareness protocol, and persistence
+//! using Yrs (Rust port of Yjs). The `yrs` dependency is added when sync code is implemented.

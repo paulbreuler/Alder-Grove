@@ -1,3 +1,4 @@
-//! Grove API — Axum 0.8 cloud API server.
+//! Grove API — cloud API server.
 //!
-//! HTTP routes, database adapters, auth middleware, ACP WebSocket server, CRDT sync.
+//! Will provide HTTP routes, database adapters, auth middleware, ACP WebSocket server, and CRDT sync.
+//! Dependencies (axum, sqlx, etc.) are added as features are implemented.
