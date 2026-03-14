@@ -242,7 +242,15 @@ function generatedFilePaths(skillDirs: string[], ruleBasenames: string[]): strin
   ];
 }
 
-async function generateAgentsMd(skillDirs: string[], agentNames: string[], commandNames: string[]) {
+export function renderAgentsMarkdown({
+  skillDirs,
+  agentNames,
+  commandNames,
+}: {
+  skillDirs: string[];
+  agentNames: string[];
+  commandNames: string[];
+}): string {
   let content = '# Codex Repository Instructions\n\n';
   content += 'This repository keeps canonical assistant playbooks in `.claude/`.\n';
   content += 'Use the generated compatibility files in `.agents/skills/` to bridge those playbooks into Codex.\n\n';
@@ -280,7 +288,18 @@ async function generateAgentsMd(skillDirs: string[], agentNames: string[], comma
   content += '- `AGENTS.md`, `.agents/skills/*`, `GEMINI.md`, `.gemini/*`, and `.github/copilot-instructions.md` are generated from `.claude/`.\n';
   content += '- Do not edit generated files by hand. Update `CLAUDE.md` or `.claude/**`, then rerun `pnpm ai:generate`.\n';
 
-  return renderGenerated('AGENTS.md', content);
+  return content;
+}
+
+async function generateAgentsMd(skillDirs: string[], agentNames: string[], commandNames: string[]) {
+  return renderGenerated(
+    'AGENTS.md',
+    renderAgentsMarkdown({
+      skillDirs,
+      agentNames,
+      commandNames,
+    }),
+  );
 }
 
 async function generateCodexSkillWrappers(skillDirs: string[]) {

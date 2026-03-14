@@ -4,6 +4,7 @@ import {
   extractSection,
   parseSkillFrontmatter,
   prependGeneratedHeader,
+  renderAgentsMarkdown,
   stripFrontmatter,
   renderCodexSkillWrapper,
 } from '../scripts/generate-ai-configs';
@@ -107,5 +108,19 @@ When invoked:
 2. Follow that workflow and output format.
 3. Resolve relative paths from \`.claude/skills/code-review/\`.
 `);
+  });
+});
+
+describe('renderAgentsMarkdown', () => {
+  it('includes command playbook mappings when commands exist', () => {
+    const content = renderAgentsMarkdown({
+      skillDirs: ['audit'],
+      agentNames: ['security-reviewer'],
+      commandNames: ['audit'],
+    });
+
+    expect(content).toContain('## Command Playbooks');
+    expect(content).toContain('- `/audit` -> `.claude/commands/audit.md`');
+    expect(content).toContain('- `audit` -> `.claude/skills/audit/SKILL.md`');
   });
 });

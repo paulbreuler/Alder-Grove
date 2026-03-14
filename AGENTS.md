@@ -8,6 +8,16 @@ Use the generated compatibility files in `.agents/skills/` to bridge those playb
 Project-wide guidance lives in `CLAUDE.md`.
 Path-specific guidance lives in `.claude/rules/*.md`.
 
+## Command Playbooks
+
+When a user invokes a slash-style command, load the matching file from `.claude/commands/`.
+
+- `/audit` -> `.claude/commands/audit.md`
+- `/check-architecture` -> `.claude/commands/check-architecture.md`
+- `/code-review` -> `.claude/commands/code-review.md`
+- `/commit` -> `.claude/commands/commit.md`
+- `/pr` -> `.claude/commands/pr.md`
+
 ## Skills
 
 Codex discovers skills from `.agents/skills/*/SKILL.md`.
