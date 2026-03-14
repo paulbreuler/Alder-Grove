@@ -6,7 +6,7 @@
 ## Quick Start
 
 ```bash
-# Prerequisites: Rust 1.93+, Node 25+, pnpm 10+, Docker
+# Prerequisites: Rust 1.93+, Node 22+, pnpm 10+, Docker
 
 # Start database
 docker compose up -d
