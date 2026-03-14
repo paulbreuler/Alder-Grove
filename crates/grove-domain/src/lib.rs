@@ -7,5 +7,6 @@ pub mod error;
 pub mod journey;
 pub mod persona;
 pub mod repository;
+pub mod specification;
 pub mod step;
 pub mod workspace;
