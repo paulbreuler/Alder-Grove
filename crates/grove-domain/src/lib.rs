@@ -5,6 +5,7 @@
 pub mod common;
 pub mod error;
 pub mod journey;
+pub mod note;
 pub mod persona;
 pub mod repository;
 pub mod specification;
