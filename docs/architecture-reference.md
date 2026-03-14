@@ -41,18 +41,46 @@ Everything is workspace-scoped. Organization is managed by Clerk.
 Organization (Clerk-managed)
   └─ Workspace
        ├─ Repository (linked codebases)
-       ├─ Persona (user or agent)
+       ├─ Persona (design archetype)
        ├─ Journey (flow → steps → spec links)
-       ├─ Specification (criteria, tasks)
-       ├─ Note (decision, learning, gotcha)
-       ├─ Session (AI agent instance)
+       │    └─ Step (ordered, AI-assessed completion)
+       ├─ Specification (requirements, tasks)
+       │    └─ Task (actionable work item)
+       ├─ Note (decision, learning, gotcha) ──→ note_links (polymorphic)
+       ├─ Session (AI agent instance) [deferred — v2]
        │    ├─ Gate (approval checkpoint)
        │    └─ Event (activity log)
-       └─ Snapshot (codebase analysis)
+       └─ Snapshot (codebase analysis) [v2]
 ```
 
-- Dedicated tables per entity type
-- Foreign keys for relationships
+### Data Model Approach: Normalized Core + Strategic JSONB
+
+- Dedicated tables per entity type with proper foreign keys
+- Embedded data (requirements, error handling, testing strategy) uses typed JSONB
+- PostgreSQL 18 features: `uuidv7()` for all PKs, virtual generated columns for JSONB aggregates, `JSON_TABLE()` for relational JSONB queries
+- AI provenance fields (`ai_authored`, `ai_confidence`, `ai_rationale`) baked directly into entities
+- Polymorphic note linking for cross-entity knowledge capture
+- Child entities (steps, tasks) inherit workspace scope through parent FKs
+- `updated_at` trigger function applied to all mutable tables
+
+### Schema (11 tables)
+
+| Table | Parent FK | Workspace Scope | AI Provenance | Notes |
+|-------|-----------|-----------------|---------------|-------|
+| workspaces | — | Root | No | UNIQUE (org_id, name) |
+| repositories | workspace_id | Direct | No | Git remote reference |
+| personas | workspace_id | Direct | Yes | Design archetypes |
+| journeys | workspace_id | Direct | Yes | persona_id FK (ON DELETE SET NULL) |
+| steps | journey_id | Inherited | Yes | sort_order, percent_complete (AI-assessed) |
+| step_specifications | step_id, specification_id | Inherited | No | M:N join table |
+| specifications | workspace_id | Direct | Yes | requirements JSONB, virtual generated columns |
+| tasks | specification_id | Inherited | Yes | Actionable work items |
+| notes | workspace_id | Direct | Yes | category: decision, learning, gotcha, general |
+| note_links | note_id | Inherited | No | Polymorphic (entity_type + entity_id) |
+| snapshots | workspace_id, repository_id | Direct | Yes | analysis JSONB (v2 stub) |
+
+Full field-level schema: `.docs/superpowers/specs/2026-03-13-data-model-design.md`
+
 - Workspace is the tenant-scoped container
 - All API routes scoped by `org_id` / `workspace_id`
 
@@ -138,3 +166,14 @@ Carried forward and refined:
 - **Documentation**: utoipa + Swagger UI (OpenAPI)
 - **Migrations**: SQL files, versioned, run at startup
 - **Auth middleware**: JWKS fetch, JWT decode, org/workspace extraction
+
+---
+
+## Database Conventions
+
+- **IDs**: `uuidv7()` for all primary keys (PG18 native, time-sortable)
+- **Timestamps**: `created_at` and `updated_at` on all mutable tables, with `set_updated_at()` trigger
+- **Deletion**: Hard delete for v1 with `ON DELETE CASCADE` from parent entities
+- **JSONB**: Typed shapes with Rust/TypeScript mirror types; virtual generated columns for aggregates
+- **Tenant isolation**: Top-level entities carry `workspace_id`; child entities inherit via parent FK
+- **AI provenance**: `ai_authored`, `ai_confidence`, `ai_rationale` on entities where AI can author content

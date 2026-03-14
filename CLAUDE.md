@@ -44,18 +44,23 @@ Dependencies flow inward. Domain never imports from other layers.
 ```
 Organization (Clerk-managed)
   └─ Workspace
-       ├─ Repository       # linked codebases
-       ├─ Persona           # user or agent
-       ├─ Journey           # flow → steps → spec links
-       ├─ Specification     # criteria, tasks
-       ├─ Note              # decision, learning, gotcha
-       ├─ Session           # AI agent instance
-       │    ├─ Gate          # approval checkpoint
-       │    └─ Event         # activity log
-       └─ Snapshot          # codebase analysis
+       ├─ Repository        # linked codebases
+       ├─ Persona            # design archetype
+       ├─ Journey            # flow → steps → spec links
+       │    └─ Step           # ordered, AI-assessed completion
+       ├─ Specification      # requirements (JSONB), tasks
+       │    └─ Task           # actionable work item
+       ├─ Note               # decision, learning, gotcha
+       │    └─ note_links     # polymorphic entity linking
+       ├─ Session            # AI agent instance [deferred]
+       │    ├─ Gate           # approval checkpoint
+       │    └─ Event          # activity log
+       └─ Snapshot           # codebase analysis [v2]
 ```
 
 All content is workspace-scoped. API routes: `/orgs/{org_id}/workspaces/{ws_id}/...`
+
+Database: Normalized Core + Strategic JSONB. uuidv7() PKs. AI provenance on content entities. See `.docs/superpowers/specs/2026-03-13-data-model-design.md` for full schema.
 
 ## Shell Extensions
 
@@ -136,13 +141,17 @@ docker compose up -d      # Start PostgreSQL
 | Term          | Meaning                                                    |
 | ------------- | ---------------------------------------------------------- |
 | Workspace     | Tenant-scoped container for all content                    |
-| Persona       | A user type or AI agent identity                           |
+| Persona       | A design archetype representing a user type                |
 | Journey       | A user flow composed of ordered steps                      |
-| Specification | Detailed requirements with acceptance criteria and tasks   |
-| Session       | An AI agent execution instance                             |
+| Step          | An ordered action within a journey, with AI-assessed completion |
+| Specification | Detailed requirements (functional, non-functional, acceptance) with tasks |
+| Task          | An actionable work item under a specification              |
+| Note          | A knowledge artifact: decision, learning, gotcha, or general |
+| Note Link     | Polymorphic association from a note to any entity          |
+| Session       | An AI agent execution instance (deferred)                  |
 | Gate          | An approval checkpoint within a session                    |
 | Guardrail     | A rule or constraint governing agent behavior              |
-| Snapshot      | A structured analysis of a linked codebase                 |
+| Snapshot      | A structured analysis of a linked codebase (v2)            |
 | ACP           | Agent Communication Protocol (WebSocket-based)             |
 | Shell         | Alder Shell — the extension framework                      |
 | Extension     | A feature module registered with the Shell                 |
