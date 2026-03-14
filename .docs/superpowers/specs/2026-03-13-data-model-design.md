@@ -113,7 +113,7 @@ Reference to an external codebase. Tauri client handles local cloning/access.
 | workspace_id | UUID | FK → workspaces, ON DELETE CASCADE | |
 | name | TEXT | NOT NULL | |
 | url | TEXT | | Git remote URL (HTTPS or SSH) |
-| default_branch | TEXT | DEFAULT 'main' | For snapshot analysis |
+| default_branch | TEXT | NOT NULL, DEFAULT 'main' | For snapshot analysis |
 | description | TEXT | | |
 | created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | |
 | updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | |
