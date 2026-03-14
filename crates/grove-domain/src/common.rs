@@ -25,12 +25,12 @@ impl AiProvenance {
         ai_confidence: Option<f32>,
         ai_rationale: Option<String>,
     ) -> Result<Self, DomainError> {
-        if let Some(confidence) = ai_confidence {
-            if !(0.0..=1.0).contains(&confidence) {
-                return Err(DomainError::Validation(
-                    "ai_confidence must be between 0.0 and 1.0".into(),
-                ));
-            }
+        if let Some(confidence) = ai_confidence
+            && !(0.0..=1.0).contains(&confidence)
+        {
+            return Err(DomainError::Validation(
+                "ai_confidence must be between 0.0 and 1.0".into(),
+            ));
         }
 
         Ok(Self {
