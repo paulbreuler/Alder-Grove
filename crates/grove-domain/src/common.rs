@@ -23,7 +23,7 @@ mod tests {
     }
 
     #[test]
-    fn ai_provenance_deserializes_with_missing_fields() {
+    fn ai_provenance_ignores_unknown_fields_when_flattened() {
         let json = r#"{"title":"hello"}"#;
         let prov: AiProvenance = serde_json::from_str(json).unwrap();
         assert!(!prov.ai_authored);

@@ -21,6 +21,7 @@ pub struct RequirementItem {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+#[serde(default)]
 pub struct SpecificationRequirements {
     pub functional: Vec<RequirementItem>,
     pub non_functional: Vec<RequirementItem>,
