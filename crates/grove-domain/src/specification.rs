@@ -160,11 +160,11 @@ mod tests {
         assert_eq!(spec.id, back.id);
         assert_eq!(spec.title, back.title);
         assert_eq!(spec.status, back.status);
-        assert_eq!(spec.requirements.functional.len(), 1);
-        assert_eq!(spec.dependencies.len(), 1);
-        assert_eq!(spec.error_handling.len(), 1);
+        assert_eq!(back.requirements.functional.len(), 1);
+        assert_eq!(back.dependencies.len(), 1);
+        assert_eq!(back.error_handling.len(), 1);
         assert!(back.testing_strategy.is_some());
-        assert_eq!(spec.components.len(), 1);
-        assert_eq!(spec.ai.ai_authored, back.ai.ai_authored);
+        assert_eq!(back.components.len(), 1);
+        assert_eq!(back.ai.ai_authored, spec.ai.ai_authored);
     }
 }

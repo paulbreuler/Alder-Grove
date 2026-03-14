@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 /// AI authorship metadata embedded in content entities.
 /// Flattened into parent structs via `#[serde(flatten)]`.
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+#[serde(default)]
 pub struct AiProvenance {
     pub ai_authored: bool,
     pub ai_confidence: Option<f32>,
@@ -16,6 +17,15 @@ mod tests {
     #[test]
     fn ai_provenance_defaults_to_not_authored() {
         let prov = AiProvenance::default();
+        assert!(!prov.ai_authored);
+        assert!(prov.ai_confidence.is_none());
+        assert!(prov.ai_rationale.is_none());
+    }
+
+    #[test]
+    fn ai_provenance_deserializes_with_missing_fields() {
+        let json = r#"{"title":"hello"}"#;
+        let prov: AiProvenance = serde_json::from_str(json).unwrap();
         assert!(!prov.ai_authored);
         assert!(prov.ai_confidence.is_none());
         assert!(prov.ai_rationale.is_none());

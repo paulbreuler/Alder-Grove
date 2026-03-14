@@ -67,7 +67,8 @@ mod tests {
         assert_eq!(snapshot.id, back.id);
         assert_eq!(snapshot.status, back.status);
         assert_eq!(snapshot.summary, back.summary);
-        assert_eq!(snapshot.analysis["modules"], 3);
-        assert_eq!(snapshot.ai.ai_authored, back.ai.ai_authored);
+        assert_eq!(back.analysis["modules"], 3);
+        assert_eq!(back.analysis["files"], 42);
+        assert_eq!(back.ai.ai_authored, snapshot.ai.ai_authored);
     }
 }
