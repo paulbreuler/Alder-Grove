@@ -23,12 +23,32 @@ mod tests {
     }
 
     #[test]
-    fn ai_provenance_ignores_unknown_fields_when_flattened() {
-        let json = r#"{"title":"hello"}"#;
+    fn ai_provenance_defaults_when_fields_missing() {
+        // Verifies #[serde(default)] — unknown fields ignored, missing AI fields get defaults
+        let json = r#"{}"#;
         let prov: AiProvenance = serde_json::from_str(json).unwrap();
         assert!(!prov.ai_authored);
         assert!(prov.ai_confidence.is_none());
         assert!(prov.ai_rationale.is_none());
+    }
+
+    #[test]
+    fn ai_provenance_flatten_ignores_sibling_fields() {
+        // Simulates #[serde(flatten)] context where parent fields leak into AiProvenance
+        use serde::Deserialize;
+
+        #[derive(Deserialize)]
+        struct Parent {
+            title: String,
+            #[serde(flatten)]
+            ai: AiProvenance,
+        }
+
+        let json = r#"{"title":"hello","ai_authored":true,"ai_confidence":0.9}"#;
+        let parent: Parent = serde_json::from_str(json).unwrap();
+        assert_eq!(parent.title, "hello");
+        assert!(parent.ai.ai_authored);
+        assert_eq!(parent.ai.ai_confidence, Some(0.9));
     }
 
     #[test]
