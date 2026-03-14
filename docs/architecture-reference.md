@@ -28,7 +28,8 @@
 | Auth        | Clerk                               | JWT on API, ClerkProvider on FE  |
 | Testing     | Vitest (unit), Playwright (e2e)     | TDD mandatory                    |
 | Package Mgr | pnpm workspaces                     | Monorepo                         |
-| Rust WS     | Cargo workspace                     | src-tauri + src-api              |
+| CRDT        | Yrs (Rust) + Yjs (JS)               | Real-time collaborative editing  |
+| Rust WS     | Cargo workspace                     | 5 crates under `crates/`         |
 | Registry    | GitHub Packages                     | `@paulbreuler` scope             |
 
 ---
@@ -47,9 +48,14 @@ Organization (Clerk-managed)
        ├─ Specification (requirements, tasks)
        │    └─ Task (actionable work item)
        ├─ Note (decision, learning, gotcha) ──→ note_links (polymorphic)
-       ├─ Session (AI agent instance) [deferred — v2]
-       │    ├─ Gate (approval checkpoint)
-       │    └─ Event (activity log)
+       ├─ Agent (AI service identity)
+       ├─ Session (AI agent execution instance)
+       │    ├─ Gate (approval checkpoint) ──→ Gate Definition (template)
+       │    ├─ Event (activity log, append-only)
+       │    └─ session_guardrails (M:N) ──→ Guardrail
+       ├─ Gate Definition (reusable gate template)
+       ├─ Guardrail (agent behavioral constraint)
+       ├─ Collaborative Document (CRDT state per entity field)
        └─ Snapshot (codebase analysis) [v2]
 ```
 
@@ -63,7 +69,9 @@ Organization (Clerk-managed)
 - Child entities (steps, tasks) inherit workspace scope through parent FKs
 - `updated_at` trigger function applied to all mutable tables
 
-### Schema (11 tables)
+### Schema (19 tables)
+
+**Content entities (11 tables):**
 
 | Table | Parent FK | Workspace Scope | AI Provenance | Notes |
 |-------|-----------|-----------------|---------------|-------|
@@ -79,7 +87,27 @@ Organization (Clerk-managed)
 | note_links | note_id | Inherited | No | Polymorphic (entity_type + entity_id) |
 | snapshots | workspace_id, repository_id | Direct | Yes | analysis JSONB (v2 stub) |
 
-Full field-level schema: `.docs/superpowers/specs/2026-03-13-data-model-design.md`
+**ACP entities (7 tables):**
+
+| Table | Parent FK | Workspace Scope | Notes |
+|-------|-----------|-----------------|-------|
+| agents | workspace_id | Direct | AI service identity (provider, model, capabilities JSONB) |
+| sessions | workspace_id, agent_id | Direct | Polymorphic target (target_type + target_id), status state machine |
+| gate_definitions | workspace_id | Direct | Reusable gate templates (trigger_type, trigger_config JSONB) |
+| gates | session_id | Inherited | Runtime approval checkpoints (status, expires_at) |
+| events | session_id | Inherited | Append-only activity stream (event_type, data JSONB). No updated_at |
+| guardrails | workspace_id | Direct | Agent constraints (category, enforcement, rule JSONB, versioned) |
+| session_guardrails | session_id, guardrail_id | Inherited | M:N join table |
+
+**CRDT sync (1 table):**
+
+| Table | Parent FK | Workspace Scope | Notes |
+|-------|-----------|-----------------|-------|
+| collaborative_documents | workspace_id | Direct | CRDT binary state per entity field (entity_type + entity_id + field_name) |
+
+Full field-level schemas:
+- Content: `.docs/superpowers/specs/2026-03-13-data-model-design.md`
+- ACP + CRDT: `.docs/superpowers/specs/2026-03-14-acp-rust-architecture-design.md`
 
 - Workspace is the tenant-scoped container
 - All API routes scoped by `org_id` / `workspace_id`
@@ -135,14 +163,54 @@ Each extension has an `extension.tsx` entry point that registers with `bootstrap
 
 ---
 
+## Rust Crate Architecture
+
+Five crates under `crates/`, organized by responsibility:
+
+```
+crates/
+  grove-domain/     Pure types, port traits, business rules (zero framework deps)
+  grove-sync/       CRDT sync layer (Yrs documents, awareness, persistence)
+  grove-api/        Axum 0.8 cloud API server (routes, DB, auth, ACP, sync)
+  grove-tauri/      Tauri v2 desktop app (IPC commands, API proxy, ACP client)
+  grove-ts-gen/     Build-time TypeScript type generation (ts-rs)
+```
+
+**Dependency flow:** `grove-domain` has zero framework dependencies. Both `grove-api` and `grove-tauri` depend on `grove-domain`. `grove-api` also depends on `grove-sync`. `grove-ts-gen` depends only on `grove-domain`.
+
+**Error handling (3 levels):**
+1. `DomainError` (grove-domain): NotFound, Validation, Conflict, Unauthorized, Internal — pure, no HTTP
+2. `AppError` (grove-api): Wraps DomainError + sqlx::Error → RFC 9457 JSON responses
+3. `CommandError` (grove-tauri): Wraps API HTTP errors + local errors → serialized to frontend JSON
+
+---
+
+## CRDT Sync Layer
+
+Real-time collaborative editing between human and AI using Yrs (Rust) + Yjs (JavaScript).
+
+- **Architecture**: Hybrid CRDT + PostgreSQL. CRDT is the real-time transport; PostgreSQL remains the authoritative store
+- **Scope**: All text-editable entity fields (descriptions, content, goals, pain_points). NOT status fields, IDs, FKs, or timestamps
+- **Persistence**: `collaborative_documents` table stores CRDT binary state for reconnect/resume
+- **Presence**: Yjs awareness protocol carries cursor positions, selections, and activity indicators (ephemeral, not persisted)
+- **Transport**: Multiplexed over the same WebSocket as ACP messages — three channels: ACP events, CRDT sync, awareness
+
+Full design: `.docs/superpowers/specs/2026-03-14-acp-rust-architecture-design.md`
+
+---
+
 ## Agent Communication Protocol (ACP)
 
-- WebSocket-based protocol between Grove and AI agents
-- Handles: session lifecycle, message routing, gate enforcement
+- WebSocket-based protocol between Grove and AI agents (hub-and-spoke through API)
+- Handles: session lifecycle, message routing, gate enforcement, CRDT sync, presence/awareness
+- Multiplexed WebSocket: ACP messages + CRDT binary updates + awareness state on a single connection
 - Frontend: Zustand store for session state, hooks for WebSocket management
-- API: Axum WebSocket server in `src-api/acp/`
-- **Gates**: Configurable approval checkpoints — pause agent, surface for human review
-- **Guardrails**: First-class managed entities (not scattered repo files)
+- API: Axum WebSocket server in `crates/grove-api/src/acp/`
+- **Agents**: First-class workspace-scoped entities (provider, model, capabilities, config)
+- **Sessions**: Polymorphic target (any content entity), status state machine, context snapshot
+- **Gates**: Configurable approval checkpoints — definition templates + runtime instances with timeouts
+- **Guardrails**: First-class managed entities (prohibition/requirement/preference/boundary), enforced or advisory
+- **Events**: Append-only activity stream for full session observability
 
 ---
 
