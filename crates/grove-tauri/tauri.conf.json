@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/tauri-v2.10.3/crates/tauri-utils/schema.json",
+  "productName": "Alder Grove",
+  "version": "0.1.0",
+  "bundle": {
+    "identifier": "com.aldergrove.app"
+  },
+  "build": {
+    "frontendDist": "../../dist",
+    "devUrl": "http://localhost:5173"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "title": "Alder Grove",
+        "width": 1200,
+        "height": 800
+      }
+    ]
+  }
+}

@@ -1,6 +1,9 @@
 # Internal documentation (specs, plans — local only)
 .docs/
 
+# Git worktrees (isolated workspaces)
+.worktrees/
+
 # Dependencies
 node_modules/
 

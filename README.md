@@ -3,47 +3,59 @@
 > Desktop OS for AI-assisted software development.
 > *Your applications grow in the Grove.*
 
-Grove is a desktop-native application for startups, solo developers, and small teams
-who want a single, connected system of record for the entire software lifecycle —
-from Personas and Journeys through Executable Specifications to Gated AI Agent
-Sessions and Codebase Snapshots.
-
-Built on Tauri v2 (desktop) + Rust Axum 0.8 (cloud API) + React 19.2 (frontend) +
-PostgreSQL 18.
-
-## Documentation
-
-| Document | Description |
-| --- | --- |
-| [`docs/prfaq.md`](docs/prfaq.md) | Product vision, press release, competitor FAQ |
-| [`docs/architecture-reference.md`](docs/architecture-reference.md) | Tech stack, entity model, hexagonal layers, ACP |
-| [`docs/architecture-flows.md`](docs/architecture-flows.md) | Request flow, multi-tenant, and ACP diagrams |
-| [`CLAUDE.md`](CLAUDE.md) | AI collaboration guidelines (Claude Code) |
-
 ## Quick Start
 
 ```bash
-# Frontend
-pnpm install
-pnpm dev
+# Prerequisites: Rust 1.93+, Node 22+, pnpm 10+, Docker
 
-# API
-cargo build -p grove-api
-cargo run -p grove-api
-
-# Desktop
-cargo tauri dev
-
-# Database
+# Start database
 docker compose up -d
+
+# Build Rust crates
+cargo build
+
+# Install frontend dependencies
+pnpm install
+
+# Run tests
+cargo test
+pnpm test
 ```
 
 ## Architecture
 
-**Hexagonal** — every feature follows domain → application → adapters → UI.
-Dependencies flow inward. See
-[`docs/architecture-reference.md`](docs/architecture-reference.md) for full details.
+Tauri v2 desktop client + cloud-hosted Axum API, backed by PostgreSQL 18.
 
-## License
+### Rust Crates (`crates/`)
 
-Proprietary. All rights reserved.
+| Crate | Purpose |
+|-------|---------|
+| `grove-domain` | Pure types, port traits, business rules (zero framework deps) |
+| `grove-sync` | CRDT sync layer — Yrs (Rust port of Yjs) |
+| `grove-api` | Axum 0.8 cloud API server |
+| `grove-tauri` | Tauri v2 desktop app (IPC commands, API proxy) |
+| `grove-ts-gen` | Build-time TypeScript type generation (ts-rs) |
+
+### Frontend (`src/`)
+
+React + TypeScript in the Tauri webview (dependencies added as features are built). Hexagonal architecture per feature:
+
+```
+src/features/<feature>/
+  domain/       Pure types, business rules
+  application/  Hooks, stores, use cases
+  adapters/     API clients, Tauri invoke wrappers
+  ui/           React components
+```
+
+### Database
+
+PostgreSQL 18. Schema design targets 19 tables (11 content + 7 ACP + 1 CRDT sync) — migrations are added incrementally.
+
+See `docs/architecture-reference.md` for the full technical reference.
+
+## Documentation
+
+- `docs/prfaq.md` — Product vision
+- `docs/architecture-reference.md` — Tech stack, entity model, schema
+- `docs/architecture-flows.md` — Sequence diagrams, state machines (Mermaid)
