@@ -3,3 +3,4 @@
 //! Zero framework dependencies. Both grove-api and grove-tauri depend on this crate.
 
 pub mod common;
+pub mod error;
