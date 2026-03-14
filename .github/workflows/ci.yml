@@ -11,6 +11,30 @@ env:
   RUSTFLAGS: "-Dwarnings"
 
 jobs:
+  pr-title:
+    name: PR Title
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate conventional commit format
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          pattern='^(feat|fix|refactor|test|docs|chore|ci|perf|style|build|revert)(\(.+\))?: .+'
+          if [[ ! "$PR_TITLE" =~ $pattern ]]; then
+            echo "::error::PR title must follow conventional commits: type(scope): description"
+            echo ""
+            echo "Valid types: feat, fix, refactor, test, docs, chore, ci, perf, style, build, revert"
+            echo "Examples:"
+            echo "  feat(personas): add create persona form"
+            echo "  fix: resolve null pointer in session cleanup"
+            echo "  chore: bump vite to 8.0.0"
+            echo ""
+            echo "Got: $PR_TITLE"
+            exit 1
+          fi
+          echo "PR title is valid: $PR_TITLE"
+
   rust:
     name: Rust
     runs-on: ubuntu-latest
