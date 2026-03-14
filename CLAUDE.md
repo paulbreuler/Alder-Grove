@@ -164,7 +164,7 @@ docs/                              # Public technical documentation
   ├── architecture-reference.md    # Tech stack, entity model, hex layers, ACP
   └── architecture-flows.md        # Request flow, multi-tenant, ACP diagrams
 
-.docs/                             # Internal documentation
+.docs/                             # Internal documentation (gitignored)
   └── superpowers/
       ├── specs/                   # Design specs from brainstorming skill
       │   └── YYYY-MM-DD-<topic>-design.md
@@ -172,6 +172,7 @@ docs/                              # Public technical documentation
           └── YYYY-MM-DD-<topic>.md
 ```
 
+- `.docs/` is **gitignored** — local working documents only
 - **Brainstorming** produces specs → `.docs/superpowers/specs/`
 - **Writing-plans** produces plans → `.docs/superpowers/plans/`
 - Research and reference docs go at the `.docs/` root level
