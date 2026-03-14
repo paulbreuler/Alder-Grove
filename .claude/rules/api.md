@@ -1,6 +1,8 @@
 ---
 paths:
-  - "src-api/**/*.rs"
+  - "crates/grove-api/**/*.rs"
+  - "crates/grove-domain/**/*.rs"
+  - "crates/grove-sync/**/*.rs"
 ---
 
 # API Rules (Rust Axum 0.8)
@@ -10,12 +12,19 @@ paths:
 ## Hexagonal Layers
 
 ```
-src-api/src/
-  ├─ domain/        # Entity structs, traits (ports), business rules
+crates/grove-api/src/
   ├─ routes/        # HTTP handlers (adapters — inbound)
   ├─ db/            # Database queries (adapters — outbound)
   ├─ auth/          # Clerk JWT middleware
-  └─ acp/           # ACP WebSocket server
+  ├─ acp/           # ACP WebSocket server, broker, session management
+  └─ sync/          # CRDT sync handler, PostgreSQL bridge
+
+crates/grove-domain/src/
+  ├─ *.rs           # Entity structs (one per entity)
+  ├─ ports.rs       # Port traits (repository interfaces)
+  ├─ error.rs       # DomainError enum
+  ├─ common.rs      # AiProvenance, shared types
+  └─ acp.rs         # ACP protocol message types
 ```
 
 ### Domain

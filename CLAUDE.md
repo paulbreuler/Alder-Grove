@@ -24,9 +24,11 @@ See `docs/prfaq.md` for product vision. See `docs/architecture-reference.md` for
 | API         | Rust (Axum 0.8)                    |
 | Database    | PostgreSQL 18                      |
 | Auth        | Clerk (JWT)                        |
+| CRDT        | Yrs (Rust) + Yjs (JS)             |
 | Unit Tests  | Vitest                             |
 | E2E Tests   | Playwright                         |
 | Package Mgr | pnpm workspaces                    |
+| Rust WS     | Cargo workspace (`crates/`)        |
 
 ## Architecture
 
@@ -44,23 +46,39 @@ Dependencies flow inward. Domain never imports from other layers.
 ```
 Organization (Clerk-managed)
   └─ Workspace
-       ├─ Repository        # linked codebases
-       ├─ Persona            # design archetype
-       ├─ Journey            # flow → steps → spec links
-       │    └─ Step           # ordered, AI-assessed completion
-       ├─ Specification      # requirements (JSONB), tasks
-       │    └─ Task           # actionable work item
-       ├─ Note               # decision, learning, gotcha
-       │    └─ note_links     # polymorphic entity linking
-       ├─ Session            # AI agent instance [deferred]
-       │    ├─ Gate           # approval checkpoint
-       │    └─ Event          # activity log
-       └─ Snapshot           # codebase analysis [v2]
+       ├─ Repository              # linked codebases
+       ├─ Persona                  # design archetype
+       ├─ Journey                  # flow → steps → spec links
+       │    └─ Step                 # ordered, AI-assessed completion
+       ├─ Specification            # requirements (JSONB), tasks
+       │    └─ Task                 # actionable work item
+       ├─ Note                     # decision, learning, gotcha
+       │    └─ note_links           # polymorphic entity linking
+       ├─ Agent                    # AI service identity
+       ├─ Session                  # AI agent execution instance
+       │    ├─ Gate                 # approval checkpoint → Gate Definition
+       │    ├─ Event                # activity log (append-only)
+       │    └─ session_guardrails   # M:N → Guardrail
+       ├─ Gate Definition          # reusable gate template
+       ├─ Guardrail                # agent behavioral constraint
+       ├─ Collaborative Document   # CRDT state per entity field
+       └─ Snapshot                 # codebase analysis [v2]
 ```
 
 All content is workspace-scoped. API routes: `/orgs/{org_id}/workspaces/{ws_id}/...`
 
-Database: Normalized Core + Strategic JSONB. uuidv7() PKs. AI provenance on content entities. See `.docs/superpowers/specs/2026-03-13-data-model-design.md` for full schema.
+Database: 19 tables. Normalized Core + Strategic JSONB. uuidv7() PKs. AI provenance on content entities.
+
+**Rust crate layout:**
+
+```
+crates/
+  grove-domain/     # Pure types, port traits, business rules (zero deps)
+  grove-sync/       # CRDT sync layer (Yrs)
+  grove-api/        # Axum 0.8 cloud API (routes, DB, auth, ACP, sync)
+  grove-tauri/      # Tauri v2 desktop (IPC commands, API proxy)
+  grove-ts-gen/     # TypeScript type generation (ts-rs)
+```
 
 ## Shell Extensions
 
@@ -96,10 +114,16 @@ pnpm test                 # Run Vitest
 pnpm check                # TypeScript + ESLint
 pnpm e2e                  # Playwright tests
 
-# API (Rust)
-cargo build -p grove-api  # Build API
-cargo test -p grove-api   # Test API
-cargo run -p grove-api    # Run API server
+# Rust crates
+cargo build               # Build all crates
+cargo test                # Test all crates
+cargo build -p grove-domain  # Build domain crate only
+cargo test -p grove-domain   # Test domain crate only
+cargo build -p grove-api     # Build API crate
+cargo test -p grove-api      # Test API crate
+cargo build -p grove-sync    # Build CRDT sync crate
+cargo test -p grove-sync     # Test CRDT sync crate
+cargo run -p grove-api       # Run API server
 
 # Desktop
 cargo tauri dev           # Run Tauri dev mode
@@ -138,23 +162,28 @@ docker compose up -d      # Start PostgreSQL
 
 ## Vocabulary
 
-| Term          | Meaning                                                    |
-| ------------- | ---------------------------------------------------------- |
-| Workspace     | Tenant-scoped container for all content                    |
-| Persona       | A design archetype representing a user type                |
-| Journey       | A user flow composed of ordered steps                      |
-| Step          | An ordered action within a journey, with AI-assessed completion |
-| Specification | Detailed requirements (functional, non-functional, acceptance) with tasks |
-| Task          | An actionable work item under a specification              |
-| Note          | A knowledge artifact: decision, learning, gotcha, or general |
-| Note Link     | Polymorphic association from a note to any entity          |
-| Session       | An AI agent execution instance (deferred)                  |
-| Gate          | An approval checkpoint within a session                    |
-| Guardrail     | A rule or constraint governing agent behavior              |
-| Snapshot      | A structured analysis of a linked codebase (v2)            |
-| ACP           | Agent Communication Protocol (WebSocket-based)             |
-| Shell         | Alder Shell — the extension framework                      |
-| Extension     | A feature module registered with the Shell                 |
+| Term                    | Meaning                                                    |
+| ----------------------- | ---------------------------------------------------------- |
+| Workspace               | Tenant-scoped container for all content                    |
+| Persona                 | A design archetype representing a user type                |
+| Journey                 | A user flow composed of ordered steps                      |
+| Step                    | An ordered action within a journey, with AI-assessed completion |
+| Specification           | Detailed requirements (functional, non-functional, acceptance) with tasks |
+| Task                    | An actionable work item under a specification              |
+| Note                    | A knowledge artifact: decision, learning, gotcha, or general |
+| Note Link               | Polymorphic association from a note to any entity          |
+| Agent                   | An AI service identity (provider, model, capabilities)     |
+| Session                 | An AI agent execution instance with status state machine   |
+| Gate                    | A runtime approval checkpoint within a session             |
+| Gate Definition         | A reusable gate template with trigger config and timeout   |
+| Event                   | An immutable activity record in the session event stream   |
+| Guardrail               | A versioned rule/constraint governing agent behavior       |
+| Session Guardrail       | M:N link between a session and specific guardrails         |
+| Collaborative Document  | CRDT binary state for a single entity field (sync buffer)  |
+| Snapshot                | A structured analysis of a linked codebase (v2)            |
+| ACP                     | Agent Communication Protocol (WebSocket-based)             |
+| Shell                   | Alder Shell — the extension framework                      |
+| Extension               | A feature module registered with the Shell                 |
 
 ## Documentation Structure
 
@@ -179,7 +208,6 @@ docs/                              # Public technical documentation
 
 ## What NOT to Build (v1)
 
-- Real-time collaboration / multiplayer editing
 - Third-party extension marketplace
 - Mobile app
 - Self-hosted API option

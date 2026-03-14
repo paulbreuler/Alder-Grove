@@ -1,7 +1,7 @@
 ---
 paths:
-  - "src-tauri/**/*.rs"
-  - "src-tauri/**/*.json"
+  - "crates/grove-tauri/**/*.rs"
+  - "crates/grove-tauri/**/*.json"
 ---
 
 # Desktop Rules (Tauri v2)
@@ -36,4 +36,4 @@ paths:
 - Desktop app builds independently from the cloud API
 - Auto-update configuration via Tauri updater plugin
 - Code signing required for distribution
-- Icons in `src-tauri/icons/`
+- Icons in `crates/grove-tauri/icons/`
