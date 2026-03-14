@@ -101,7 +101,8 @@ crates/
 4. **Shell extension model** — features as extensions
 5. **Conventional commits** — `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`
 6. **Quality gates** — `pnpm check` + `pnpm test` before any PR
-7. **Supervised AI** — gates and guardrails are product, not overhead
+7. **Conventional comments** — use [conventionalcomments.org](https://conventionalcomments.org/) labels on PR reviews (`suggestion:`, `issue:`, `nitpick:`, etc.)
+8. **Supervised AI** — gates and guardrails are product, not overhead
 
 ## Commands
 
