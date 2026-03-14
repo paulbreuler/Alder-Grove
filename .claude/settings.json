@@ -1,0 +1,41 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash(git commit*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/format-staged-md.sh",
+            "timeout": 30000
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/guard-secrets.sh",
+            "timeout": 10000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(git push*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/guard-no-push.sh",
+            "timeout": 10000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(git *)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/guard-destructive-git.sh \"$TOOL_INPUT\"",
+            "timeout": 10000
+          }
+        ]
+      }
+    ]
+  }
+}
