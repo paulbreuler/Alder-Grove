@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:18
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: grove
+      POSTGRES_PASSWORD: grove_dev
+      POSTGRES_DB: grove_dev
+    volumes:
+      - grove_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U grove"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  grove_data:
