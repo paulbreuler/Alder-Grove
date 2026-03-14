@@ -9,7 +9,7 @@ Alder Grove is a multi-tenant CMS for product and project management, tightly
 integrated with AI agents. Desktop Tauri v2 client + cloud-hosted Axum API.
 Alder Shell extension system provides the UI framework.
 
-See `PRFAQ.md` for product vision. See `ARCHITECTURE.md` for technical reference.
+See `docs/prfaq.md` for product vision. See `docs/architecture-reference.md` for technical reference.
 
 ## Tech Stack
 
@@ -146,6 +146,26 @@ docker compose up -d      # Start PostgreSQL
 | ACP           | Agent Communication Protocol (WebSocket-based)             |
 | Shell         | Alder Shell — the extension framework                      |
 | Extension     | A feature module registered with the Shell                 |
+
+## Documentation Structure
+
+```
+docs/                              # Public technical documentation
+  ├── prfaq.md                     # Product vision, press release, competitor FAQ
+  ├── architecture-reference.md    # Tech stack, entity model, hex layers, ACP
+  └── architecture-flows.md        # Request flow, multi-tenant, ACP diagrams
+
+.docs/                             # Internal documentation
+  └── superpowers/
+      ├── specs/                   # Design specs from brainstorming skill
+      │   └── YYYY-MM-DD-<topic>-design.md
+      └── plans/                   # Implementation plans from writing-plans skill
+          └── YYYY-MM-DD-<topic>.md
+```
+
+- **Brainstorming** produces specs → `.docs/superpowers/specs/`
+- **Writing-plans** produces plans → `.docs/superpowers/plans/`
+- Research and reference docs go at the `.docs/` root level
 
 ## What NOT to Build (v1)
 

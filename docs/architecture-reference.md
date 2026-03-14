@@ -1,7 +1,6 @@
 # Alder Grove — Architecture Reference
 
-> Extracted from base-plan.md, modernized for a fresh start.
-> Old plan is superseded — this is the living reference.
+> Living technical reference for the Alder Grove platform.
 
 ---
 
