@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 /// Domain-level errors. Pure — no HTTP, no framework types.
-#[derive(Debug, Error)]
+#[derive(Debug, Error, PartialEq, Eq)]
 pub enum DomainError {
     #[error("{entity} not found: {id}")]
     NotFound { entity: String, id: String },

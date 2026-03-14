@@ -35,11 +35,8 @@ mod tests {
             description: Some("A software developer".into()),
             goals: Some("Ship features fast".into()),
             pain_points: Some("Too many meetings".into()),
-            ai: AiProvenance {
-                ai_authored: true,
-                ai_confidence: Some(0.85),
-                ai_rationale: Some("Inferred from interviews".into()),
-            },
+            ai: AiProvenance::new(true, Some(0.85), Some("Inferred from interviews".into()))
+                .unwrap(),
             created_at: now,
             updated_at: now,
         };
@@ -47,7 +44,7 @@ mod tests {
         let back: Persona = serde_json::from_str(&json).unwrap();
         assert_eq!(persona.id, back.id);
         assert_eq!(persona.name, back.name);
-        assert_eq!(persona.ai.ai_authored, back.ai.ai_authored);
+        assert_eq!(persona.ai.ai_authored(), back.ai.ai_authored());
     }
 
     #[test]
@@ -60,11 +57,7 @@ mod tests {
             description: None,
             goals: None,
             pain_points: None,
-            ai: AiProvenance {
-                ai_authored: true,
-                ai_confidence: Some(0.9),
-                ai_rationale: None,
-            },
+            ai: AiProvenance::new(true, Some(0.9), None).unwrap(),
             created_at: now,
             updated_at: now,
         };

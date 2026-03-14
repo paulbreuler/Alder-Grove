@@ -50,11 +50,7 @@ mod tests {
             description: Some("POST /api/auth/login".into()),
             sort_order: 1,
             status: TaskStatus::Pending,
-            ai: AiProvenance {
-                ai_authored: true,
-                ai_confidence: Some(0.88),
-                ai_rationale: None,
-            },
+            ai: AiProvenance::new(true, Some(0.88), None).unwrap(),
             created_at: now,
             updated_at: now,
         };

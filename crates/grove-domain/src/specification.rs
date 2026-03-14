@@ -148,11 +148,8 @@ mod tests {
                 action: "create".into(),
                 description: "Auth module entry".into(),
             }],
-            ai: AiProvenance {
-                ai_authored: true,
-                ai_confidence: Some(0.92),
-                ai_rationale: Some("Generated from user story".into()),
-            },
+            ai: AiProvenance::new(true, Some(0.92), Some("Generated from user story".into()))
+                .unwrap(),
             created_at: now,
             updated_at: now,
         };
@@ -166,6 +163,6 @@ mod tests {
         assert_eq!(back.error_handling.len(), 1);
         assert!(back.testing_strategy.is_some());
         assert_eq!(back.components.len(), 1);
-        assert_eq!(back.ai.ai_authored, spec.ai.ai_authored);
+        assert_eq!(back.ai.ai_authored(), spec.ai.ai_authored());
     }
 }

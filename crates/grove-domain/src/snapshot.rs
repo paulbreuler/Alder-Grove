@@ -54,11 +54,7 @@ mod tests {
                 "files": 42,
                 "languages": ["rust", "typescript"]
             }),
-            ai: AiProvenance {
-                ai_authored: true,
-                ai_confidence: Some(0.97),
-                ai_rationale: Some("Automated analysis".into()),
-            },
+            ai: AiProvenance::new(true, Some(0.97), Some("Automated analysis".into())).unwrap(),
             created_at: now,
             updated_at: now,
         };
@@ -69,6 +65,6 @@ mod tests {
         assert_eq!(snapshot.summary, back.summary);
         assert_eq!(back.analysis["modules"], 3);
         assert_eq!(back.analysis["files"], 42);
-        assert_eq!(back.ai.ai_authored, snapshot.ai.ai_authored);
+        assert_eq!(back.ai.ai_authored(), snapshot.ai.ai_authored());
     }
 }

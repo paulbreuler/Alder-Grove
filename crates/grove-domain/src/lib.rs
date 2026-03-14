@@ -11,5 +11,6 @@ pub mod repository;
 pub mod snapshot;
 pub mod specification;
 pub mod step;
+pub mod step_specification;
 pub mod task;
 pub mod workspace;

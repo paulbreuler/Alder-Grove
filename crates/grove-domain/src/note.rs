@@ -23,10 +23,6 @@ pub enum LinkableEntityType {
     Task,
     Persona,
     Repository,
-    Session,
-    Agent,
-    Gate,
-    Guardrail,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -87,10 +83,6 @@ mod tests {
             LinkableEntityType::Task,
             LinkableEntityType::Persona,
             LinkableEntityType::Repository,
-            LinkableEntityType::Session,
-            LinkableEntityType::Agent,
-            LinkableEntityType::Gate,
-            LinkableEntityType::Guardrail,
         ];
         for variant in variants {
             let json = serde_json::to_string(&variant).unwrap();
