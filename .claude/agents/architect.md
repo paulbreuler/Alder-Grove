@@ -6,10 +6,10 @@ tools:
   - Read
   - Grep
   - Glob
-  - Bash
 disallowedTools:
   - Edit
   - Write
+  - Bash
 skills:
   - check-architecture
 memory: project

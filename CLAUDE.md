@@ -171,7 +171,7 @@ Never hand-edit generated assistant config files. Update `.claude/` or
 
 Agent teams enabled via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
 Team formation: 3-5 teammates with worktree isolation, quality gate hooks on
-`TaskCompleted`. See `.docs/2026-03-14-agent-teams-research.md` for patterns.
+`TaskCompleted`. See `docs/research/2026-03-14-agent-teams-research.md` for patterns.
 
 ## Key Design Decisions
 
@@ -215,10 +215,11 @@ Team formation: 3-5 teammates with worktree isolation, quality gate hooks on
 docs/                              # Public technical documentation
   ├── prfaq.md                     # Product vision, press release, competitor FAQ
   ├── architecture-reference.md    # Tech stack, entity model, hex layers, ACP
-  └── architecture-flows.md        # Request flow, multi-tenant, ACP diagrams
+  ├── architecture-flows.md        # Request flow, multi-tenant, ACP diagrams
+  └── research/                    # Research and reference docs
+      └── YYYY-MM-DD-<topic>-research.md
 
 .docs/                             # Internal documentation (gitignored)
-  ├── YYYY-MM-DD-<topic>-research.md  # Research and reference docs
   └── superpowers/
       ├── specs/                   # Design specs from brainstorming skill
       │   └── YYYY-MM-DD-<topic>-design.md
@@ -226,8 +227,8 @@ docs/                              # Public technical documentation
           └── YYYY-MM-DD-<topic>.md
 ```
 
+- **Research** docs → `docs/research/YYYY-MM-DD-<topic>-research.md`
 - `.docs/` is **gitignored** — local working documents only
-- **Research** docs → `.docs/YYYY-MM-DD-<topic>-research.md`
 - **Brainstorming** produces specs → `.docs/superpowers/specs/`
 - **Writing-plans** produces plans → `.docs/superpowers/plans/`
 

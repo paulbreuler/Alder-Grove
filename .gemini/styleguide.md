@@ -78,10 +78,11 @@ docker compose up -d      # Start PostgreSQL
 docs/                              # Public technical documentation
   ├── prfaq.md                     # Product vision, press release, competitor FAQ
   ├── architecture-reference.md    # Tech stack, entity model, hex layers, ACP
-  └── architecture-flows.md        # Request flow, multi-tenant, ACP diagrams
+  ├── architecture-flows.md        # Request flow, multi-tenant, ACP diagrams
+  └── research/                    # Research and reference docs
+      └── YYYY-MM-DD-<topic>-research.md
 
 .docs/                             # Internal documentation (gitignored)
-  ├── YYYY-MM-DD-<topic>-research.md  # Research and reference docs
   └── superpowers/
       ├── specs/                   # Design specs from brainstorming skill
       │   └── YYYY-MM-DD-<topic>-design.md
@@ -89,8 +90,8 @@ docs/                              # Public technical documentation
           └── YYYY-MM-DD-<topic>.md
 ```
 
+- **Research** docs → `docs/research/YYYY-MM-DD-<topic>-research.md`
 - `.docs/` is **gitignored** — local working documents only
-- **Research** docs → `.docs/YYYY-MM-DD-<topic>-research.md`
 - **Brainstorming** produces specs → `.docs/superpowers/specs/`
 - **Writing-plans** produces plans → `.docs/superpowers/plans/`
 
