@@ -92,3 +92,46 @@ UPDATE session_guardrails SET workspace_id = (
 );
 ALTER TABLE session_guardrails ALTER COLUMN workspace_id SET NOT NULL;
 CREATE INDEX idx_session_guardrails_workspace ON session_guardrails (workspace_id);
+
+-- ============================================================
+-- Enable Row Level Security on all tables
+-- FORCE ensures RLS applies even to table owners
+-- ============================================================
+
+-- workspaces (root — policy on id, not workspace_id)
+ALTER TABLE workspaces ENABLE ROW LEVEL SECURITY;
+ALTER TABLE workspaces FORCE ROW LEVEL SECURITY;
+CREATE POLICY workspace_isolation ON workspaces
+    FOR ALL
+    USING (id = current_workspace_id())
+    WITH CHECK (id = current_workspace_id());
+
+-- All workspace_id-scoped tables (18 tables)
+DO $$
+DECLARE
+    tbl TEXT;
+BEGIN
+    FOR tbl IN
+        SELECT unnest(ARRAY[
+            'repositories', 'personas', 'journeys', 'specifications',
+            'notes', 'snapshots', 'agents', 'sessions',
+            'gate_definitions', 'guardrails', 'collaborative_documents',
+            'steps', 'tasks', 'note_links', 'gates', 'events',
+            'step_specifications', 'session_guardrails'
+        ])
+    LOOP
+        EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', tbl);
+        EXECUTE format('ALTER TABLE %I FORCE ROW LEVEL SECURITY', tbl);
+        EXECUTE format(
+            'CREATE POLICY workspace_isolation ON %I FOR ALL USING (workspace_id = current_workspace_id()) WITH CHECK (workspace_id = current_workspace_id())',
+            tbl
+        );
+    END LOOP;
+END
+$$;
+
+-- ============================================================
+-- Append-only enforcement for events table
+-- ============================================================
+CREATE POLICY events_no_update ON events FOR UPDATE USING (false);
+CREATE POLICY events_no_delete ON events FOR DELETE USING (false);
