@@ -32,3 +32,63 @@ $$;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO grove_app;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO grove_app;
+
+-- ============================================================
+-- Denormalize workspace_id into indirectly-scoped tables
+-- Enables O(1) RLS policy evaluation (no subqueries needed)
+-- ============================================================
+
+-- steps (scoped through journeys)
+ALTER TABLE steps
+    ADD COLUMN workspace_id UUID REFERENCES workspaces(id) ON DELETE CASCADE;
+UPDATE steps SET workspace_id = (SELECT workspace_id FROM journeys WHERE journeys.id = steps.journey_id);
+ALTER TABLE steps ALTER COLUMN workspace_id SET NOT NULL;
+CREATE INDEX idx_steps_workspace ON steps (workspace_id);
+
+-- tasks (scoped through specifications)
+ALTER TABLE tasks
+    ADD COLUMN workspace_id UUID REFERENCES workspaces(id) ON DELETE CASCADE;
+UPDATE tasks SET workspace_id = (SELECT workspace_id FROM specifications WHERE specifications.id = tasks.specification_id);
+ALTER TABLE tasks ALTER COLUMN workspace_id SET NOT NULL;
+CREATE INDEX idx_tasks_workspace ON tasks (workspace_id);
+
+-- note_links (scoped through notes)
+ALTER TABLE note_links
+    ADD COLUMN workspace_id UUID REFERENCES workspaces(id) ON DELETE CASCADE;
+UPDATE note_links SET workspace_id = (SELECT workspace_id FROM notes WHERE notes.id = note_links.note_id);
+ALTER TABLE note_links ALTER COLUMN workspace_id SET NOT NULL;
+CREATE INDEX idx_note_links_workspace ON note_links (workspace_id);
+
+-- gates (scoped through sessions)
+ALTER TABLE gates
+    ADD COLUMN workspace_id UUID REFERENCES workspaces(id) ON DELETE CASCADE;
+UPDATE gates SET workspace_id = (SELECT workspace_id FROM sessions WHERE sessions.id = gates.session_id);
+ALTER TABLE gates ALTER COLUMN workspace_id SET NOT NULL;
+CREATE INDEX idx_gates_workspace ON gates (workspace_id);
+
+-- events (scoped through sessions)
+ALTER TABLE events
+    ADD COLUMN workspace_id UUID REFERENCES workspaces(id) ON DELETE CASCADE;
+UPDATE events SET workspace_id = (SELECT workspace_id FROM sessions WHERE sessions.id = events.session_id);
+ALTER TABLE events ALTER COLUMN workspace_id SET NOT NULL;
+CREATE INDEX idx_events_workspace ON events (workspace_id);
+
+-- step_specifications (join table)
+ALTER TABLE step_specifications
+    ADD COLUMN workspace_id UUID REFERENCES workspaces(id) ON DELETE CASCADE;
+UPDATE step_specifications SET workspace_id = (
+    SELECT j.workspace_id FROM steps s
+    JOIN journeys j ON j.id = s.journey_id
+    WHERE s.id = step_specifications.step_id
+);
+ALTER TABLE step_specifications ALTER COLUMN workspace_id SET NOT NULL;
+CREATE INDEX idx_step_specs_workspace ON step_specifications (workspace_id);
+
+-- session_guardrails (join table)
+ALTER TABLE session_guardrails
+    ADD COLUMN workspace_id UUID REFERENCES workspaces(id) ON DELETE CASCADE;
+UPDATE session_guardrails SET workspace_id = (
+    SELECT workspace_id FROM sessions WHERE sessions.id = session_guardrails.session_id
+);
+ALTER TABLE session_guardrails ALTER COLUMN workspace_id SET NOT NULL;
+CREATE INDEX idx_session_guardrails_workspace ON session_guardrails (workspace_id);
