@@ -219,10 +219,10 @@ $$;
 ### Composite Indexes for RLS-Scoped Queries
 
 Every workspace-scoped table should have `(workspace_id, id)` for efficient
-RLS-filtered primary key lookups:
+RLS-filtered primary key lookups and as composite FK targets:
 
 ```sql
-CREATE INDEX idx_<table>_workspace_id ON <table> (workspace_id, id);
+CREATE UNIQUE INDEX idx_<table>_ws_id ON <table> (workspace_id, id);
 ```
 
 PG18's skip scan means a query filtering only on `id` can still use this

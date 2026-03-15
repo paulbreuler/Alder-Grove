@@ -343,5 +343,5 @@ belong to the org). Both validations happen before any handler executes.
 - [Clerk Organizations](https://clerk.com/docs/guides/how-clerk-works/multi-tenant-architecture)
 - [Clerk JWT Customization](https://clerk.com/docs/guides/sessions/customize-session-tokens)
 - [PostgreSQL Row Level Security](https://www.postgresql.org/docs/18/ddl-rowsecurity.html)
-- project-alder ADR-006 (Tenant Isolation Strategy)
-- project-alder ADR-013 (Application-Layer Tenant Isolation)
+- project-alder ADR-006: Tenant Isolation Strategy (external — `paulbreuler/project-alder`)
+- project-alder ADR-013: Application-Layer Tenant Isolation (external — `paulbreuler/project-alder`)
