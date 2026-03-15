@@ -172,6 +172,9 @@ Never hand-edit generated assistant config files. Update `.claude/` or
 | domain-expert       | Worktree  | `grove-domain` crate — types, ports, rules  |
 | api-developer       | Worktree  | `grove-api` crate — routes, DB, auth, ACP   |
 | frontend-developer  | Worktree  | React/Shell extensions, Zustand, TypeScript |
+| debugger            | Default   | Systematic bug diagnosis with instrumented debugging |
+| researcher          | Read-only | Investigation, spike documentation, research briefs |
+| test-runner         | Default   | CI validation, coverage reporting, trivial fixes |
 
 Agent teams enabled via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
 Architecture review uses parallel specialist patterns from the research doc:

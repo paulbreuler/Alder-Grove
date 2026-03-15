@@ -37,10 +37,13 @@ Each generated skill file is a minimal wrapper around the canonical `.claude/ski
 
 - `api-developer` -> `.claude/agents/api-developer.md`
 - `backend-architect` -> `.claude/agents/backend-architect.md`
+- `debugger` -> `.claude/agents/debugger.md`
 - `domain-expert` -> `.claude/agents/domain-expert.md`
 - `frontend-architect` -> `.claude/agents/frontend-architect.md`
 - `frontend-developer` -> `.claude/agents/frontend-developer.md`
+- `researcher` -> `.claude/agents/researcher.md`
 - `security-reviewer` -> `.claude/agents/security-reviewer.md`
+- `test-runner` -> `.claude/agents/test-runner.md`
 
 ## Generated File Policy
 

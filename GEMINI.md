@@ -16,5 +16,6 @@ This file is auto-generated from `.claude/`. Update the canonical sources there 
 @.claude/rules/desktop.md
 @.claude/rules/frontend.md
 @.claude/rules/motion.md
+@.claude/rules/superpowers.md
 @.claude/rules/testing.md
 @.claude/rules/ui-design-system.md
