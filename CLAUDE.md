@@ -161,9 +161,17 @@ Never hand-edit generated assistant config files. Update `.claude/` or
 
 ## Agents
 
-| Agent              | Trigger                              |
-| ------------------ | ------------------------------------ |
-| security-reviewer  | Auth, HTTP, config, input changes    |
+| Agent               | Mode      | Trigger / Role                              |
+| ------------------- | --------- | ------------------------------------------- |
+| security-reviewer   | Read-only | Auth, HTTP, config, input changes           |
+| architect           | Read-only | Hexagonal architecture compliance review    |
+| domain-expert       | Worktree  | `grove-domain` crate — types, ports, rules  |
+| api-developer       | Worktree  | `grove-api` crate — routes, DB, auth, ACP   |
+| frontend-developer  | Worktree  | React/Shell extensions, Zustand, TypeScript |
+
+Agent teams enabled via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
+Team formation: 3-5 teammates with worktree isolation, quality gate hooks on
+`TaskCompleted`. See `docs/research/2026-03-14-agent-teams-research.md` for patterns.
 
 ## Key Design Decisions
 
@@ -207,7 +215,9 @@ Never hand-edit generated assistant config files. Update `.claude/` or
 docs/                              # Public technical documentation
   ├── prfaq.md                     # Product vision, press release, competitor FAQ
   ├── architecture-reference.md    # Tech stack, entity model, hex layers, ACP
-  └── architecture-flows.md        # Request flow, multi-tenant, ACP diagrams
+  ├── architecture-flows.md        # Request flow, multi-tenant, ACP diagrams
+  └── research/                    # Research and reference docs
+      └── YYYY-MM-DD-<topic>-research.md
 
 .docs/                             # Internal documentation (gitignored)
   └── superpowers/
@@ -217,10 +227,10 @@ docs/                              # Public technical documentation
           └── YYYY-MM-DD-<topic>.md
 ```
 
+- **Research** docs → `docs/research/YYYY-MM-DD-<topic>-research.md`
 - `.docs/` is **gitignored** — local working documents only
 - **Brainstorming** produces specs → `.docs/superpowers/specs/`
 - **Writing-plans** produces plans → `.docs/superpowers/plans/`
-- Research and reference docs go at the `.docs/` root level
 
 ## What NOT to Build (v1)
 
