@@ -44,4 +44,4 @@ Some Alder Grove skills depend on superpowers:
 ## Rules
 
 - Design specs and plans are ephemeral working documents — never commit them
-- Specs drive plans; plans drive execution. Skip steps only if the user explicitly says to
+- Specs drive plans; plans drive execution. Skip steps only if the user explicitly says to skip them
