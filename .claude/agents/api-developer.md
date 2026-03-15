@@ -4,7 +4,7 @@ description: Implements grove-api — Axum routes, middleware, database queries,
 model: opus
 isolation: worktree
 skills:
-  - check-architecture
+  - check-backend-architecture
 memory: project
 ---
 

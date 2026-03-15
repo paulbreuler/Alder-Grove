@@ -11,13 +11,11 @@ PASS/FAIL.
 
 ## Pass 1: Architecture Compliance
 
-Run `/check-architecture` checks:
+Run the specialist architecture checks:
 
-- Frontend dependency direction (domain → application → UI)
-- API dependency direction (domain isolated from framework)
-- Namespace isolation (no cross-feature UI imports)
-- Design token compliance (no raw CSS values)
-- Multi-tenant isolation (all queries workspace-scoped)
+- `/check-frontend-architecture`
+- `/check-backend-architecture`
+- `/check-architecture` may be used as the aggregate wrapper when a combined report is needed
 
 ## Pass 2: Build & Test
 
@@ -48,11 +46,8 @@ All must pass. Any failure = overall FAIL.
 === ALDER GROVE AUDIT ===
 
 Pass 1: Architecture Compliance
-  ✅ Frontend dependency direction
-  ✅ API dependency direction
-  ✅ Namespace isolation
-  ✅ Design token compliance
-  ✅ Multi-tenant isolation
+  ✅ Frontend architecture
+  ✅ Backend architecture
   RESULT: PASS
 
 Pass 2: Build & Test

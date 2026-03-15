@@ -141,7 +141,9 @@ docker compose up -d      # Start PostgreSQL
 | -------------------- | ----------------------------------------------- |
 | `/commit`            | Stage and create conventional commit            |
 | `/pr`                | Push branch and create GitHub PR                |
-| `/check-architecture`| Verify hexagonal constraints                    |
+| `/check-frontend-architecture` | Verify React/TypeScript architecture boundaries |
+| `/check-backend-architecture`  | Verify Rust hexagonal architecture boundaries    |
+| `/check-architecture`| Run the full architecture review with specialist agents |
 | `/code-review`       | Dispatch superpowers code reviewer              |
 | `/audit`             | Full quality gate (arch + docs + tests)         |
 
@@ -165,14 +167,18 @@ Never hand-edit generated assistant config files. Update `.claude/` or
 | Agent               | Mode      | Trigger / Role                              |
 | ------------------- | --------- | ------------------------------------------- |
 | security-reviewer   | Read-only | Auth, HTTP, config, input changes           |
-| architect           | Read-only | Hexagonal architecture compliance review    |
+| frontend-architect  | Read-only | React/TypeScript architecture compliance    |
+| backend-architect   | Read-only | Rust hexagonal architecture compliance      |
 | domain-expert       | Worktree  | `grove-domain` crate — types, ports, rules  |
 | api-developer       | Worktree  | `grove-api` crate — routes, DB, auth, ACP   |
 | frontend-developer  | Worktree  | React/Shell extensions, Zustand, TypeScript |
 
 Agent teams enabled via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
-Team formation: 3-5 teammates with worktree isolation, quality gate hooks on
-`TaskCompleted`. See `docs/research/2026-03-14-agent-teams-research.md` for patterns.
+Architecture review uses parallel specialist patterns from the research doc:
+frontend and backend architects review independently, then results are
+aggregated. Team formation: 3-5 teammates with worktree isolation, quality gate
+hooks on `TaskCompleted`. See `docs/research/2026-03-14-agent-teams-research.md`
+for patterns.
 
 ## Key Design Decisions
 

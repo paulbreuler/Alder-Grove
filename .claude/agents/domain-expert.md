@@ -4,7 +4,7 @@ description: Implements and reviews grove-domain crate — pure types, entities,
 model: opus
 isolation: worktree
 skills:
-  - check-architecture
+  - check-backend-architecture
 memory: project
 ---
 

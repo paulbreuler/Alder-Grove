@@ -4,7 +4,7 @@ description: Implements React components, Shell extensions, Zustand stores, Type
 model: opus
 isolation: worktree
 skills:
-  - check-architecture
+  - check-frontend-architecture
 memory: project
 ---
 
