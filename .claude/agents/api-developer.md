@@ -28,6 +28,7 @@ database queries, authentication, and the ACP WebSocket layer.
 - **API routes** follow `/orgs/{org_id}/workspaces/{ws_id}/...` pattern
 - **Clerk auth** — JWT validation on all protected endpoints
 - **Error responses** — follow RFC 9457 Problem Details format
+- **SOLID principles** — see `.claude/rules/design-principles.md`
 - **TDD** — RED → GREEN → REFACTOR
 - **Clippy clean** — `cargo clippy -p grove-api` must pass
 - **Tests pass** — `cargo test -p grove-api` must pass before completion
@@ -38,3 +39,4 @@ database queries, authentication, and the ACP WebSocket layer.
 - Database queries implement port traits defined in domain
 - No business logic in route handlers — delegate to domain/application layer
 - Secrets from environment only, never hardcoded
+- Extract shared adapter patterns — don't duplicate query boilerplate across repos

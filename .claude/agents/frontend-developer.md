@@ -28,6 +28,7 @@ Zustand stores, and UI components using Alder Shell and Grove design tokens.
 - **Shell extension model** — features as extensions, not ad-hoc routes
 - **Hexagonal layers** — domain → application → adapters → UI
 - **No cross-feature imports** — extensions are isolated
+- **SOLID principles** — see `.claude/rules/design-principles.md`
 - **TDD** — RED → GREEN → REFACTOR
 - **Quality gates** — `pnpm check` + `pnpm test` must pass before completion
 
@@ -37,3 +38,4 @@ Zustand stores, and UI components using Alder Shell and Grove design tokens.
 - Application layer depends on domain types only
 - Adapters (API clients) implement interfaces, not called directly from UI
 - Zustand stores are per-feature, not global
+- Extract shared hooks and utilities — don't duplicate across extensions
