@@ -115,6 +115,49 @@ impl Session {
             updated_at,
         })
     }
+
+    /// Validate and apply a status transition, updating `updated_at`.
+    pub fn transition_to(&mut self, target: SessionStatus) -> Result<(), DomainError> {
+        if !self.status.can_transition_to(target) {
+            return Err(DomainError::Conflict(format!(
+                "cannot transition session from {:?} to {:?}",
+                self.status, target
+            )));
+        }
+        self.status = target;
+        self.updated_at = Utc::now();
+        Ok(())
+    }
+
+    /// Pending -> Active.
+    pub fn start(&mut self) -> Result<(), DomainError> {
+        self.transition_to(SessionStatus::Active)
+    }
+
+    /// Active -> Completed.
+    pub fn complete(&mut self) -> Result<(), DomainError> {
+        self.transition_to(SessionStatus::Completed)
+    }
+
+    /// Active -> Failed.
+    pub fn fail(&mut self) -> Result<(), DomainError> {
+        self.transition_to(SessionStatus::Failed)
+    }
+
+    /// Active | Gated -> Cancelled.
+    pub fn cancel(&mut self) -> Result<(), DomainError> {
+        self.transition_to(SessionStatus::Cancelled)
+    }
+
+    /// Active -> Gated.
+    pub fn gate(&mut self) -> Result<(), DomainError> {
+        self.transition_to(SessionStatus::Gated)
+    }
+
+    /// Gated -> Active.
+    pub fn resume(&mut self) -> Result<(), DomainError> {
+        self.transition_to(SessionStatus::Active)
+    }
 }
 
 impl<'de> Deserialize<'de> for Session {
@@ -159,14 +202,14 @@ mod tests {
 
     #[test]
     fn valid_transitions() {
-        // Pending → Active
+        // Pending -> Active
         assert!(SessionStatus::Pending.can_transition_to(SessionStatus::Active));
-        // Active → Completed, Failed, Cancelled, Gated
+        // Active -> Completed, Failed, Cancelled, Gated
         assert!(SessionStatus::Active.can_transition_to(SessionStatus::Completed));
         assert!(SessionStatus::Active.can_transition_to(SessionStatus::Failed));
         assert!(SessionStatus::Active.can_transition_to(SessionStatus::Cancelled));
         assert!(SessionStatus::Active.can_transition_to(SessionStatus::Gated));
-        // Gated → Active, Cancelled, TimedOut
+        // Gated -> Active, Cancelled, TimedOut
         assert!(SessionStatus::Gated.can_transition_to(SessionStatus::Active));
         assert!(SessionStatus::Gated.can_transition_to(SessionStatus::Cancelled));
         assert!(SessionStatus::Gated.can_transition_to(SessionStatus::TimedOut));
@@ -310,5 +353,172 @@ mod tests {
         assert!(err
             .to_string()
             .contains("target_type and target_id must both be set or both be None"));
+    }
+
+    // ── New behavioral tests ──
+
+    #[test]
+    fn session_start_transitions_pending_to_active() {
+        let now = Utc::now();
+        let mut session = Session::new(
+            Uuid::now_v7(),
+            Uuid::now_v7(),
+            Uuid::now_v7(),
+            SessionStatus::Pending,
+            SessionIntent::Implement,
+            None,
+            None,
+            None,
+            now,
+            now,
+        )
+        .unwrap();
+        assert!(session.start().is_ok());
+        assert_eq!(session.status, SessionStatus::Active);
+        assert!(session.updated_at >= now);
+    }
+
+    #[test]
+    fn session_start_rejects_non_pending() {
+        let now = Utc::now();
+        let mut session = Session::new(
+            Uuid::now_v7(),
+            Uuid::now_v7(),
+            Uuid::now_v7(),
+            SessionStatus::Active,
+            SessionIntent::Implement,
+            None,
+            None,
+            None,
+            now,
+            now,
+        )
+        .unwrap();
+        let err = session.start().unwrap_err();
+        assert!(matches!(err, DomainError::Conflict(_)));
+    }
+
+    #[test]
+    fn session_complete_from_active() {
+        let now = Utc::now();
+        let mut session = Session::new(
+            Uuid::now_v7(),
+            Uuid::now_v7(),
+            Uuid::now_v7(),
+            SessionStatus::Active,
+            SessionIntent::Review,
+            None,
+            None,
+            None,
+            now,
+            now,
+        )
+        .unwrap();
+        assert!(session.complete().is_ok());
+        assert_eq!(session.status, SessionStatus::Completed);
+    }
+
+    #[test]
+    fn session_fail_from_active() {
+        let now = Utc::now();
+        let mut session = Session::new(
+            Uuid::now_v7(),
+            Uuid::now_v7(),
+            Uuid::now_v7(),
+            SessionStatus::Active,
+            SessionIntent::Implement,
+            None,
+            None,
+            None,
+            now,
+            now,
+        )
+        .unwrap();
+        assert!(session.fail().is_ok());
+        assert_eq!(session.status, SessionStatus::Failed);
+    }
+
+    #[test]
+    fn session_gate_and_resume_lifecycle() {
+        let now = Utc::now();
+        let mut session = Session::new(
+            Uuid::now_v7(),
+            Uuid::now_v7(),
+            Uuid::now_v7(),
+            SessionStatus::Active,
+            SessionIntent::Implement,
+            None,
+            None,
+            None,
+            now,
+            now,
+        )
+        .unwrap();
+        // Active -> Gated
+        assert!(session.gate().is_ok());
+        assert_eq!(session.status, SessionStatus::Gated);
+        // Gated -> Active (resume)
+        assert!(session.resume().is_ok());
+        assert_eq!(session.status, SessionStatus::Active);
+    }
+
+    #[test]
+    fn session_cancel_from_active_or_gated() {
+        let now = Utc::now();
+        let mut s1 = Session::new(
+            Uuid::now_v7(),
+            Uuid::now_v7(),
+            Uuid::now_v7(),
+            SessionStatus::Active,
+            SessionIntent::Implement,
+            None,
+            None,
+            None,
+            now,
+            now,
+        )
+        .unwrap();
+        assert!(s1.cancel().is_ok());
+        assert_eq!(s1.status, SessionStatus::Cancelled);
+
+        let mut s2 = Session::new(
+            Uuid::now_v7(),
+            Uuid::now_v7(),
+            Uuid::now_v7(),
+            SessionStatus::Gated,
+            SessionIntent::Implement,
+            None,
+            None,
+            None,
+            now,
+            now,
+        )
+        .unwrap();
+        assert!(s2.cancel().is_ok());
+        assert_eq!(s2.status, SessionStatus::Cancelled);
+    }
+
+    #[test]
+    fn session_transition_to_rejects_invalid() {
+        let now = Utc::now();
+        let mut session = Session::new(
+            Uuid::now_v7(),
+            Uuid::now_v7(),
+            Uuid::now_v7(),
+            SessionStatus::Completed,
+            SessionIntent::Implement,
+            None,
+            None,
+            None,
+            now,
+            now,
+        )
+        .unwrap();
+        let err = session
+            .transition_to(SessionStatus::Active)
+            .unwrap_err();
+        assert!(matches!(err, DomainError::Conflict(_)));
+        // Status should not have changed
+        assert_eq!(session.status, SessionStatus::Completed);
     }
 }
