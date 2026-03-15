@@ -29,6 +29,7 @@ BEGIN
 END
 $$;
 
+GRANT USAGE ON SCHEMA public TO grove_app;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO grove_app;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO grove_app;
@@ -94,6 +95,11 @@ ALTER TABLE session_guardrails ALTER COLUMN workspace_id SET NOT NULL;
 CREATE INDEX idx_session_guardrails_workspace ON session_guardrails (workspace_id);
 
 -- ============================================================
+-- Re-grant after denormalization (ensures grove_app can access all tables)
+-- ============================================================
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO grove_app;
+
+-- ============================================================
 -- Enable Row Level Security on all tables
 -- FORCE ensures RLS applies even to table owners
 -- ============================================================
@@ -132,6 +138,31 @@ $$;
 
 -- ============================================================
 -- Append-only enforcement for events table
+-- RLS policies OR together, so a restrictive policy won't block
+-- when workspace_isolation allows access. Use a trigger instead.
 -- ============================================================
-CREATE POLICY events_no_update ON events FOR UPDATE USING (false);
-CREATE POLICY events_no_delete ON events FOR DELETE USING (false);
+CREATE OR REPLACE FUNCTION prevent_event_mutation()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Allow CASCADE deletes from parent tables (workspace/session cleanup)
+    -- Block direct UPDATE/DELETE from application code
+    IF TG_OP = 'DELETE' AND current_setting('app.current_workspace_id', true) IS NOT NULL THEN
+        RAISE EXCEPTION 'events table is append-only: direct DELETE not allowed';
+    ELSIF TG_OP = 'UPDATE' THEN
+        RAISE EXCEPTION 'events table is append-only: UPDATE not allowed';
+    END IF;
+    -- DELETE without workspace context = CASCADE from superuser, allow it
+    IF TG_OP = 'DELETE' THEN
+        RETURN OLD;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER events_immutable_update
+    BEFORE UPDATE ON events
+    FOR EACH ROW EXECUTE FUNCTION prevent_event_mutation();
+
+CREATE TRIGGER events_immutable_delete
+    BEFORE DELETE ON events
+    FOR EACH ROW EXECUTE FUNCTION prevent_event_mutation();
