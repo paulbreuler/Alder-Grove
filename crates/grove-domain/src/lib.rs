@@ -4,10 +4,12 @@
 
 pub mod common;
 pub mod error;
+pub mod guardrail;
 pub mod journey;
 pub mod note;
 pub mod persona;
 pub mod repository;
+pub mod session;
 pub mod snapshot;
 pub mod specification;
 pub mod step;
