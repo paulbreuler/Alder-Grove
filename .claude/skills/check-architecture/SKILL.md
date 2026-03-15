@@ -1,79 +1,57 @@
 ---
 name: check-architecture
-description: Verify hexagonal architecture constraints across the codebase
+description: Coordinate full-stack architecture review using frontend and backend specialist agents
 user_invocable: true
 ---
 
 # /check-architecture
 
-Verify that the codebase follows hexagonal architecture constraints.
+Run the architecture review as a **parallel specialists** workflow using the
+agent-team patterns documented in
+`docs/research/2026-03-14-agent-teams-research.md`.
 
-## Checks
+## Team Pattern
 
-### 1. Frontend Dependency Direction
+- **Frontend architect** reviews React/TypeScript architecture in `src/`
+- **Backend architect** reviews Rust hexagonal architecture in `crates/`
+- **Lead reviewer** aggregates both reports into a single result
 
-For each feature under `src/features/`:
+Use the agent-team guidance from the research doc:
 
-- **Domain** must NOT import from `application/`, `adapters/`, or `ui/`
-- **Domain** must NOT import React, Zustand, fetch, or any framework
-- **Application** must NOT import from `ui/`
-- **Application** may import from `domain/` and call `adapters/` through ports
-- **UI** must NOT import from `domain/` or `adapters/` directly
-- **UI** imports from `application/` only (hooks, stores)
+- Start with read-only research
+- Use role-based specialists with minimal overlap
+- Prefer parallel review passes
+- Aggregate findings after both specialists finish
+- Treat architectural changes as high-scrutiny work
 
-**How to check**: Grep import statements in each layer and flag violations.
+## Workflow
 
-### 2. API Dependency Direction
-
-In `crates/grove-api/src/`:
-
-- **Domain** must NOT import from `routes/`, `db/`, `auth/`, or `acp/`
-- **Domain** must NOT import Axum, sqlx, or HTTP types
-- **Routes** may import domain types and call domain logic
-- **DB** implements domain traits — may import domain types and sqlx
-
-**How to check**: Grep `use` statements in domain modules for framework imports.
-
-### 3. Namespace Isolation
-
-- No cross-feature imports at the UI layer (features don't reach into each other)
-- Shared types belong in `src/shared/domain/` if needed
-- API domain types don't leak HTTP types (`axum::*`) or DB types (`sqlx::*`)
-
-### 4. Design Token Compliance
-
-- No raw CSS values in `.tsx` or `.css` files under `src/`
-- All colors, spacing, radii, shadows must use `--grove-*` tokens
-- Search for patterns like `color: #`, `padding: [0-9]`, `background: rgb`
-
-### 5. Multi-Tenant Isolation
-
-- Every SQL query in `crates/grove-api/src/` must include `workspace_id` in WHERE
-- Every API route must extract org_id/workspace_id from auth context
-- No queries that return data across workspace boundaries
-
-### 6. Build Verification
-
-```bash
-pnpm check              # TypeScript + ESLint
-pnpm test               # Vitest
-cargo build --workspace # Rust workspace
-cargo test --workspace  # Rust tests
-```
+1. Run `/check-frontend-architecture`
+2. Run `/check-backend-architecture`
+3. Merge both results into one report
+4. Report overall PASS only if both specialist checks pass
 
 ## Output
 
-Report as a checklist:
+Report in three sections:
 
-```
-✅ Frontend dependency direction — PASS
-❌ API dependency direction — FAIL
-   domain/persona.rs imports axum::Json at line 3
-✅ Namespace isolation — PASS
-❌ Design token compliance — FAIL
-   src/features/home/ui/Dashboard.tsx:42 — raw color value #333
-✅ Multi-tenant isolation — PASS
-✅ Build verification — PASS
+```text
+=== ARCHITECTURE CHECK ===
 
-RESULT: FAIL (2 violations)
+Frontend Architecture
+  [frontend specialist report]
+  RESULT: PASS|FAIL
+
+Backend Architecture
+  [backend specialist report]
+  RESULT: PASS|FAIL
+
+=== OVERALL: PASS|FAIL ===
 ```
+
+## Rules
+
+- Do not collapse frontend and backend criteria into one checklist
+- Keep specialist findings grouped by stack
+- If one stack is not implemented yet, report `N/A` with evidence
+- Cite file paths and concrete violations for every failure

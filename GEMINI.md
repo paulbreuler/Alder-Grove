@@ -12,6 +12,7 @@ This file is auto-generated from `.claude/`. Update the canonical sources there 
 
 @.claude/rules/api.md
 @.claude/rules/code-style.md
+@.claude/rules/design-principles.md
 @.claude/rules/desktop.md
 @.claude/rules/frontend.md
 @.claude/rules/motion.md

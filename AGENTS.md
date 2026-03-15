@@ -14,6 +14,8 @@ When a user invokes a slash-style command, load the matching file from `.claude/
 
 - `/audit` -> `.claude/commands/audit.md`
 - `/check-architecture` -> `.claude/commands/check-architecture.md`
+- `/check-backend-architecture` -> `.claude/commands/check-backend-architecture.md`
+- `/check-frontend-architecture` -> `.claude/commands/check-frontend-architecture.md`
 - `/code-review` -> `.claude/commands/code-review.md`
 - `/commit` -> `.claude/commands/commit.md`
 - `/pr` -> `.claude/commands/pr.md`
@@ -25,6 +27,8 @@ Each generated skill file is a minimal wrapper around the canonical `.claude/ski
 
 - `audit` -> `.claude/skills/audit/SKILL.md`
 - `check-architecture` -> `.claude/skills/check-architecture/SKILL.md`
+- `check-backend-architecture` -> `.claude/skills/check-backend-architecture/SKILL.md`
+- `check-frontend-architecture` -> `.claude/skills/check-frontend-architecture/SKILL.md`
 - `code-review` -> `.claude/skills/code-review/SKILL.md`
 - `commit` -> `.claude/skills/commit/SKILL.md`
 - `pr` -> `.claude/skills/pr/SKILL.md`
@@ -32,8 +36,9 @@ Each generated skill file is a minimal wrapper around the canonical `.claude/ski
 ## Agent Roles
 
 - `api-developer` -> `.claude/agents/api-developer.md`
-- `architect` -> `.claude/agents/architect.md`
+- `backend-architect` -> `.claude/agents/backend-architect.md`
 - `domain-expert` -> `.claude/agents/domain-expert.md`
+- `frontend-architect` -> `.claude/agents/frontend-architect.md`
 - `frontend-developer` -> `.claude/agents/frontend-developer.md`
 - `security-reviewer` -> `.claude/agents/security-reviewer.md`
 

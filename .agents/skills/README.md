@@ -5,10 +5,12 @@
 Each generated skill wraps the canonical `.claude/skills/*/SKILL.md` file.
 Do not edit files in `.agents/skills/` by hand.
 
-| Skill              | Canonical Source                             |
-| ------------------ | -------------------------------------------- |
-| audit              | `.claude/skills/audit/SKILL.md`              |
-| check-architecture | `.claude/skills/check-architecture/SKILL.md` |
-| code-review        | `.claude/skills/code-review/SKILL.md`        |
-| commit             | `.claude/skills/commit/SKILL.md`             |
-| pr                 | `.claude/skills/pr/SKILL.md`                 |
+| Skill                       | Canonical Source                                      |
+| --------------------------- | ----------------------------------------------------- |
+| audit                       | `.claude/skills/audit/SKILL.md`                       |
+| check-architecture          | `.claude/skills/check-architecture/SKILL.md`          |
+| check-backend-architecture  | `.claude/skills/check-backend-architecture/SKILL.md`  |
+| check-frontend-architecture | `.claude/skills/check-frontend-architecture/SKILL.md` |
+| code-review                 | `.claude/skills/code-review/SKILL.md`                 |
+| commit                      | `.claude/skills/commit/SKILL.md`                      |
+| pr                          | `.claude/skills/pr/SKILL.md`                          |

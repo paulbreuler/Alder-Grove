@@ -30,13 +30,14 @@ Dependencies flow inward. Domain never imports from other layers.
 ## Development Practices
 
 1. **TDD mandatory** — RED → GREEN → REFACTOR, no exceptions
-2. **Hexagonal architecture** — enforced via `/check-architecture`
-3. **Design tokens only** — `--grove-*`, never raw CSS values
-4. **Shell extension model** — features as extensions
-5. **Conventional commits** — `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`
-6. **Quality gates** — `pnpm check` + `pnpm test` before any PR
-7. **Conventional comments** — use [conventionalcomments.org](https://conventionalcomments.org/) labels on PR reviews (`suggestion:`, `issue:`, `nitpick:`, etc.)
-8. **Supervised AI** — gates and guardrails are product, not overhead
+2. **SOLID + DRY** — loosely coupled, highly cohesive, no duplicated code (see `.claude/rules/design-principles.md`)
+3. **Hexagonal architecture** — enforced via `/check-architecture`
+4. **Design tokens only** — `--grove-*`, never raw CSS values
+5. **Shell extension model** — features as extensions
+6. **Conventional commits** — `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`
+7. **Quality gates** — `pnpm check` + `pnpm test` before any PR
+8. **Conventional comments** — use [conventionalcomments.org](https://conventionalcomments.org/) labels on PR reviews (`suggestion:`, `issue:`, `nitpick:`, etc.)
+9. **Supervised AI** — gates and guardrails are product, not overhead
 
 ---
 

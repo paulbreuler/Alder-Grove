@@ -1,6 +1,6 @@
 ---
 name: check-architecture
-description: Verify hexagonal architecture constraints across the codebase
+description: Coordinate full-stack architecture review using frontend and backend specialist agents
 ---
 
 <!-- GENERATED FROM .claude/ — DO NOT EDIT BY HAND -->

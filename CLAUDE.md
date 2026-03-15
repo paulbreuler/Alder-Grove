@@ -96,13 +96,14 @@ crates/
 ## Development Practices
 
 1. **TDD mandatory** — RED → GREEN → REFACTOR, no exceptions
-2. **Hexagonal architecture** — enforced via `/check-architecture`
-3. **Design tokens only** — `--grove-*`, never raw CSS values
-4. **Shell extension model** — features as extensions
-5. **Conventional commits** — `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`
-6. **Quality gates** — `pnpm check` + `pnpm test` before any PR
-7. **Conventional comments** — use [conventionalcomments.org](https://conventionalcomments.org/) labels on PR reviews (`suggestion:`, `issue:`, `nitpick:`, etc.)
-8. **Supervised AI** — gates and guardrails are product, not overhead
+2. **SOLID + DRY** — loosely coupled, highly cohesive, no duplicated code (see `.claude/rules/design-principles.md`)
+3. **Hexagonal architecture** — enforced via `/check-architecture`
+4. **Design tokens only** — `--grove-*`, never raw CSS values
+5. **Shell extension model** — features as extensions
+6. **Conventional commits** — `feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`
+7. **Quality gates** — `pnpm check` + `pnpm test` before any PR
+8. **Conventional comments** — use [conventionalcomments.org](https://conventionalcomments.org/) labels on PR reviews (`suggestion:`, `issue:`, `nitpick:`, etc.)
+9. **Supervised AI** — gates and guardrails are product, not overhead
 
 ## Commands
 
@@ -140,7 +141,9 @@ docker compose up -d      # Start PostgreSQL
 | -------------------- | ----------------------------------------------- |
 | `/commit`            | Stage and create conventional commit            |
 | `/pr`                | Push branch and create GitHub PR                |
-| `/check-architecture`| Verify hexagonal constraints                    |
+| `/check-frontend-architecture` | Verify React/TypeScript architecture boundaries |
+| `/check-backend-architecture`  | Verify Rust hexagonal architecture boundaries    |
+| `/check-architecture`| Run the full architecture review with specialist agents |
 | `/code-review`       | Dispatch superpowers code reviewer              |
 | `/audit`             | Full quality gate (arch + docs + tests)         |
 
@@ -164,14 +167,18 @@ Never hand-edit generated assistant config files. Update `.claude/` or
 | Agent               | Mode      | Trigger / Role                              |
 | ------------------- | --------- | ------------------------------------------- |
 | security-reviewer   | Read-only | Auth, HTTP, config, input changes           |
-| architect           | Read-only | Hexagonal architecture compliance review    |
+| frontend-architect  | Read-only | React/TypeScript architecture compliance    |
+| backend-architect   | Read-only | Rust hexagonal architecture compliance      |
 | domain-expert       | Worktree  | `grove-domain` crate — types, ports, rules  |
 | api-developer       | Worktree  | `grove-api` crate — routes, DB, auth, ACP   |
 | frontend-developer  | Worktree  | React/Shell extensions, Zustand, TypeScript |
 
 Agent teams enabled via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
-Team formation: 3-5 teammates with worktree isolation, quality gate hooks on
-`TaskCompleted`. See `docs/research/2026-03-14-agent-teams-research.md` for patterns.
+Architecture review uses parallel specialist patterns from the research doc:
+frontend and backend architects review independently, then results are
+aggregated. Team formation: 3-5 teammates with worktree isolation, quality gate
+hooks on `TaskCompleted`. See `docs/research/2026-03-14-agent-teams-research.md`
+for patterns.
 
 ## Key Design Decisions
 
