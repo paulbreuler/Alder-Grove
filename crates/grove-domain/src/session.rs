@@ -350,9 +350,10 @@ mod tests {
             Utc::now().to_rfc3339()
         );
         let err = serde_json::from_str::<Session>(&json).unwrap_err();
-        assert!(err
-            .to_string()
-            .contains("target_type and target_id must both be set or both be None"));
+        assert!(
+            err.to_string()
+                .contains("target_type and target_id must both be set or both be None")
+        );
     }
 
     // ── New behavioral tests ──
@@ -514,9 +515,7 @@ mod tests {
             now,
         )
         .unwrap();
-        let err = session
-            .transition_to(SessionStatus::Active)
-            .unwrap_err();
+        let err = session.transition_to(SessionStatus::Active).unwrap_err();
         assert!(matches!(err, DomainError::Conflict(_)));
         // Status should not have changed
         assert_eq!(session.status, SessionStatus::Completed);

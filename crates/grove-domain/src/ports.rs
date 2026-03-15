@@ -239,7 +239,9 @@ mod tests {
         let result = repo.find_all(Uuid::now_v7()).await;
         assert!(result.is_ok());
         // Extended method works
-        let result = repo.find_by_status(Uuid::now_v7(), SessionStatus::Active).await;
+        let result = repo
+            .find_by_status(Uuid::now_v7(), SessionStatus::Active)
+            .await;
         assert!(result.is_ok());
     }
 }

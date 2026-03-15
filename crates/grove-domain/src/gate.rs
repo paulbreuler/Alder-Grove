@@ -99,20 +99,12 @@ impl Gate {
     }
 
     /// Approve a pending gate, recording who decided and why.
-    pub fn approve(
-        &mut self,
-        decided_by: String,
-        rationale: String,
-    ) -> Result<(), DomainError> {
+    pub fn approve(&mut self, decided_by: String, rationale: String) -> Result<(), DomainError> {
         self.decide(GateStatus::Approved, decided_by, rationale)
     }
 
     /// Deny a pending gate, recording who decided and why.
-    pub fn deny(
-        &mut self,
-        decided_by: String,
-        rationale: String,
-    ) -> Result<(), DomainError> {
+    pub fn deny(&mut self, decided_by: String, rationale: String) -> Result<(), DomainError> {
         self.decide(GateStatus::Denied, decided_by, rationale)
     }
 
@@ -226,7 +218,8 @@ mod tests {
             created_at: now,
             updated_at: now,
         };
-        gate.approve("user_123".into(), "Looks good".into()).unwrap();
+        gate.approve("user_123".into(), "Looks good".into())
+            .unwrap();
         assert_eq!(gate.status, GateStatus::Approved);
         assert_eq!(gate.decided_by, Some("user_123".into()));
         assert!(gate.decided_at.is_some());
@@ -293,7 +286,9 @@ mod tests {
             created_at: Utc::now(),
             updated_at: Utc::now(),
         };
-        let err = gate.approve("user_2".into(), "Override".into()).unwrap_err();
+        let err = gate
+            .approve("user_2".into(), "Override".into())
+            .unwrap_err();
         assert!(matches!(err, DomainError::Conflict(_)));
     }
 
