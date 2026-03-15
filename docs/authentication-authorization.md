@@ -214,11 +214,17 @@ events, a subquery on every read is expensive. Denormalizing `workspace_id` into
 every table gives O(1) policy evaluation — the policy is a simple column
 equality check, optimizable by the query planner via index.
 
+**Composite FKs enforce consistency.** Each denormalized table uses composite
+foreign keys like `(workspace_id, journey_id) REFERENCES journeys(workspace_id, id)`
+to guarantee the denormalized `workspace_id` matches the parent's workspace.
+This prevents a row from claiming one workspace while its parent FK points to
+a different workspace — tenant integrity is enforced at the database level.
+
 ### Append-Only Enforcement (Events)
 
 ```sql
-CREATE POLICY events_no_update ON events FOR UPDATE USING (false);
-CREATE POLICY events_no_delete ON events FOR DELETE USING (false);
+CREATE POLICY events_no_update ON events AS RESTRICTIVE FOR UPDATE USING (false);
+CREATE POLICY events_no_delete ON events AS RESTRICTIVE FOR DELETE USING (false);
 ```
 
 The events table is immutable. These policies prevent UPDATE and DELETE at the

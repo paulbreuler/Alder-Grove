@@ -150,9 +150,11 @@ Either remove the old volume (`docker compose down -v`) or set
 ```rust
 PgPoolOptions::new()
     .after_release(|conn, _meta| Box::pin(async move {
-        // Reset any lingering tenant context when connection returns to pool
-        sqlx::query("RESET ROLE; RESET app.current_workspace_id")
-            .execute(&mut *conn).await?;
+        // Reset any lingering tenant context when connection returns to pool.
+        // Split into separate statements — prepared statements don't allow
+        // multiple commands in a single query.
+        sqlx::query("RESET ROLE").execute(&mut *conn).await?;
+        sqlx::query("RESET app.current_workspace_id").execute(&mut *conn).await?;
         Ok(true)
     }))
 ```
@@ -160,6 +162,10 @@ PgPoolOptions::new()
 **Why:** `SET LOCAL` is transaction-scoped, but if a query accidentally runs
 outside a transaction, the connection retains the previous tenant's context.
 The `after_release` callback ensures clean connections.
+
+**Why split?** sqlx uses PostgreSQL's extended query protocol (prepared
+statements), which does not allow multiple commands in a single statement.
+`"RESET ROLE; RESET ..."` would fail at runtime.
 
 ### Transaction Pattern for RLS
 
