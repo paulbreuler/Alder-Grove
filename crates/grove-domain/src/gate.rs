@@ -90,11 +90,12 @@ impl Gate {
         rationale: String,
     ) -> Result<(), DomainError> {
         self.require_pending()?;
+        let now = Utc::now();
         self.status = status;
         self.decided_by = Some(decided_by);
-        self.decided_at = Some(Utc::now());
+        self.decided_at = Some(now);
         self.decision_rationale = Some(rationale);
-        self.updated_at = Utc::now();
+        self.updated_at = now;
         Ok(())
     }
 

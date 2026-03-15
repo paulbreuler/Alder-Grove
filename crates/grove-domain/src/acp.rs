@@ -15,30 +15,27 @@ pub struct GateSummary {
 /// Variants cover gate decisions, user messages, agent events,
 /// gate requests, session state changes, and errors.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-#[serde(tag = "type", content = "payload")]
+#[serde(tag = "type", content = "payload", rename_all = "snake_case")]
 pub enum AcpMessage {
+    #[serde(rename = "gate_decision")]
     GateDecision {
         gate_id: Uuid,
         approved: bool,
         reason: Option<String>,
     },
-    UserMessage {
-        content: String,
-    },
-    AgentEvent {
-        event: crate::event::Event,
-    },
-    GateRequest {
-        gate: GateSummary,
-    },
+    #[serde(rename = "user_message")]
+    UserMessage { content: String },
+    #[serde(rename = "agent_event")]
+    AgentEvent { event: crate::event::Event },
+    #[serde(rename = "gate_request")]
+    GateRequest { gate: GateSummary },
+    #[serde(rename = "session_state_change")]
     SessionStateChange {
         session_id: Uuid,
         status: crate::session::SessionStatus,
     },
-    Error {
-        code: String,
-        message: String,
-    },
+    #[serde(rename = "error")]
+    Error { code: String, message: String },
 }
 
 /// WebSocket frame — multiplexes ACP messages and CRDT sync on a single connection.
@@ -75,7 +72,7 @@ mod tests {
         };
         let json = serde_json::to_string(&msg).unwrap();
         let val: serde_json::Value = serde_json::from_str(&json).unwrap();
-        assert_eq!(val["type"], "GateDecision");
+        assert_eq!(val["type"], "gate_decision");
         assert_eq!(val["payload"]["approved"], true);
         assert_eq!(val["payload"]["reason"], "Looks good");
 
@@ -92,7 +89,7 @@ mod tests {
         };
         let json = serde_json::to_string(&msg).unwrap();
         let val: serde_json::Value = serde_json::from_str(&json).unwrap();
-        assert_eq!(val["type"], "SessionStateChange");
+        assert_eq!(val["type"], "session_state_change");
         assert_eq!(val["payload"]["status"], "active");
 
         let back: AcpMessage = serde_json::from_str(&json).unwrap();
@@ -147,7 +144,7 @@ mod tests {
         };
         let json = serde_json::to_string(&msg).unwrap();
         let val: serde_json::Value = serde_json::from_str(&json).unwrap();
-        assert_eq!(val["type"], "AgentEvent");
+        assert_eq!(val["type"], "agent_event");
 
         let back: AcpMessage = serde_json::from_str(&json).unwrap();
         assert_eq!(msg, back);
@@ -161,7 +158,7 @@ mod tests {
         };
         let json = serde_json::to_string(&msg).unwrap();
         let val: serde_json::Value = serde_json::from_str(&json).unwrap();
-        assert_eq!(val["type"], "Error");
+        assert_eq!(val["type"], "error");
         assert_eq!(val["payload"]["code"], "RATE_LIMIT");
 
         let back: AcpMessage = serde_json::from_str(&json).unwrap();
@@ -178,7 +175,7 @@ mod tests {
         let msg = AcpMessage::GateRequest { gate };
         let json = serde_json::to_string(&msg).unwrap();
         let val: serde_json::Value = serde_json::from_str(&json).unwrap();
-        assert_eq!(val["type"], "GateRequest");
+        assert_eq!(val["type"], "gate_request");
         assert_eq!(val["payload"]["gate"]["reason"], "Deleting auth module");
 
         let back: AcpMessage = serde_json::from_str(&json).unwrap();

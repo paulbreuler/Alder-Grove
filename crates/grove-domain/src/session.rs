@@ -83,6 +83,8 @@ struct SessionDef {
 }
 
 impl Session {
+    // Domain entity constructor — mirrors DB row fields directly.
+    // A builder would add indirection without value at the domain layer.
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         id: Uuid,
