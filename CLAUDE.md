@@ -161,9 +161,17 @@ Never hand-edit generated assistant config files. Update `.claude/` or
 
 ## Agents
 
-| Agent              | Trigger                              |
-| ------------------ | ------------------------------------ |
-| security-reviewer  | Auth, HTTP, config, input changes    |
+| Agent               | Mode      | Trigger / Role                              |
+| ------------------- | --------- | ------------------------------------------- |
+| security-reviewer   | Read-only | Auth, HTTP, config, input changes           |
+| architect           | Read-only | Hexagonal architecture compliance review    |
+| domain-expert       | Worktree  | `grove-domain` crate — types, ports, rules  |
+| api-developer       | Worktree  | `grove-api` crate — routes, DB, auth, ACP   |
+| frontend-developer  | Worktree  | React/Shell extensions, Zustand, TypeScript |
+
+Agent teams enabled via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
+Team formation: 3-5 teammates with worktree isolation, quality gate hooks on
+`TaskCompleted`. See `.docs/2026-03-14-agent-teams-research.md` for patterns.
 
 ## Key Design Decisions
 
@@ -210,6 +218,7 @@ docs/                              # Public technical documentation
   └── architecture-flows.md        # Request flow, multi-tenant, ACP diagrams
 
 .docs/                             # Internal documentation (gitignored)
+  ├── YYYY-MM-DD-<topic>-research.md  # Research and reference docs
   └── superpowers/
       ├── specs/                   # Design specs from brainstorming skill
       │   └── YYYY-MM-DD-<topic>-design.md
@@ -218,9 +227,9 @@ docs/                              # Public technical documentation
 ```
 
 - `.docs/` is **gitignored** — local working documents only
+- **Research** docs → `.docs/YYYY-MM-DD-<topic>-research.md`
 - **Brainstorming** produces specs → `.docs/superpowers/specs/`
 - **Writing-plans** produces plans → `.docs/superpowers/plans/`
-- Research and reference docs go at the `.docs/` root level
 
 ## What NOT to Build (v1)
 

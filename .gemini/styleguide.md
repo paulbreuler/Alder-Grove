@@ -81,6 +81,7 @@ docs/                              # Public technical documentation
   └── architecture-flows.md        # Request flow, multi-tenant, ACP diagrams
 
 .docs/                             # Internal documentation (gitignored)
+  ├── YYYY-MM-DD-<topic>-research.md  # Research and reference docs
   └── superpowers/
       ├── specs/                   # Design specs from brainstorming skill
       │   └── YYYY-MM-DD-<topic>-design.md
@@ -89,9 +90,9 @@ docs/                              # Public technical documentation
 ```
 
 - `.docs/` is **gitignored** — local working documents only
+- **Research** docs → `.docs/YYYY-MM-DD-<topic>-research.md`
 - **Brainstorming** produces specs → `.docs/superpowers/specs/`
 - **Writing-plans** produces plans → `.docs/superpowers/plans/`
-- Research and reference docs go at the `.docs/` root level
 
 ---
 
