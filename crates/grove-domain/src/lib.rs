@@ -2,8 +2,10 @@
 //!
 //! Zero framework dependencies. Both grove-api and grove-tauri depend on this crate.
 
+pub mod agent;
 pub mod common;
 pub mod error;
+pub mod gate;
 pub mod journey;
 pub mod note;
 pub mod persona;
