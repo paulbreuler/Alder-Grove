@@ -13,9 +13,18 @@ CREATE TABLE collaborative_documents (
     UNIQUE (entity_type, entity_id, field_name)
 );
 
-CREATE TRIGGER collaborative_documents_updated_at
-    BEFORE UPDATE ON collaborative_documents
+CREATE TRIGGER collaborative_documents_updated_at BEFORE UPDATE ON collaborative_documents
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE INDEX idx_collab_docs_entity ON collaborative_documents (entity_type, entity_id);
-CREATE INDEX idx_collab_docs_workspace ON collaborative_documents (workspace_id);
+CREATE INDEX idx_collab_docs_ws ON collaborative_documents (workspace_id);
+
+ALTER TABLE collaborative_documents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE collaborative_documents FORCE ROW LEVEL SECURITY;
+CREATE POLICY workspace_isolation ON collaborative_documents FOR ALL
+    USING (workspace_id = current_workspace_id())
+    WITH CHECK (workspace_id = current_workspace_id());
+
+-- Final grants + default privileges for future tables
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO grove_app;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO grove_app;
