@@ -11,21 +11,19 @@ async fn tenant_tx_isolates_data_via_rls() {
     let org_b = common::unique_org_id();
 
     // Create two workspaces as superuser
-    let ws_a: (Uuid,) = sqlx::query_as(
-        "INSERT INTO workspaces (org_id, name) VALUES ($1, 'WS-A') RETURNING id",
-    )
-    .bind(&org_a)
-    .fetch_one(&pool)
-    .await
-    .unwrap();
+    let ws_a: (Uuid,) =
+        sqlx::query_as("INSERT INTO workspaces (org_id, name) VALUES ($1, 'WS-A') RETURNING id")
+            .bind(&org_a)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
 
-    let ws_b: (Uuid,) = sqlx::query_as(
-        "INSERT INTO workspaces (org_id, name) VALUES ($1, 'WS-B') RETURNING id",
-    )
-    .bind(&org_b)
-    .fetch_one(&pool)
-    .await
-    .unwrap();
+    let ws_b: (Uuid,) =
+        sqlx::query_as("INSERT INTO workspaces (org_id, name) VALUES ($1, 'WS-B') RETURNING id")
+            .bind(&org_b)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
 
     // Insert personas as superuser
     sqlx::query("INSERT INTO personas (workspace_id, name) VALUES ($1, 'Dev')")
@@ -74,21 +72,19 @@ async fn tenant_tx_blocks_cross_workspace_insert() {
     let org_a = common::unique_org_id();
     let org_b = common::unique_org_id();
 
-    let ws_a: (Uuid,) = sqlx::query_as(
-        "INSERT INTO workspaces (org_id, name) VALUES ($1, 'WS-A') RETURNING id",
-    )
-    .bind(&org_a)
-    .fetch_one(&pool)
-    .await
-    .unwrap();
+    let ws_a: (Uuid,) =
+        sqlx::query_as("INSERT INTO workspaces (org_id, name) VALUES ($1, 'WS-A') RETURNING id")
+            .bind(&org_a)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
 
-    let ws_b: (Uuid,) = sqlx::query_as(
-        "INSERT INTO workspaces (org_id, name) VALUES ($1, 'WS-B') RETURNING id",
-    )
-    .bind(&org_b)
-    .fetch_one(&pool)
-    .await
-    .unwrap();
+    let ws_b: (Uuid,) =
+        sqlx::query_as("INSERT INTO workspaces (org_id, name) VALUES ($1, 'WS-B') RETURNING id")
+            .bind(&org_b)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
 
     // Try inserting into workspace B while scoped to workspace A
     let mut tx = TenantTx::begin(&pool, ws_a.0).await.unwrap();
