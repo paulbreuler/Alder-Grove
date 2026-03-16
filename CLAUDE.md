@@ -26,7 +26,8 @@ See `docs/prfaq.md` for product vision. See `docs/architecture-reference.md` for
 | Auth        | Clerk (JWT)                        |
 | CRDT        | Yrs (Rust) + Yjs (JS)             |
 | Unit Tests  | Vitest                             |
-| E2E Tests   | Playwright                         |
+| API E2E     | Hurl (`tests/e2e/*.hurl`)          |
+| UI E2E      | Playwright                         |
 | Package Mgr | pnpm workspaces                    |
 | Rust WS     | Cargo workspace (`crates/`)        |
 
@@ -126,6 +127,10 @@ cargo test -p grove-api      # Test API crate
 cargo build -p grove-sync    # Build CRDT sync crate
 cargo test -p grove-sync     # Test CRDT sync crate
 cargo run -p grove-api       # Run API server
+
+# API E2E (Hurl)
+./scripts/e2e.sh             # Run all API e2e tests (starts/stops server)
+./scripts/e2e.sh health.hurl # Run a single e2e test file
 
 # Desktop
 cargo tauri dev           # Run Tauri dev mode

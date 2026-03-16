@@ -1,5 +1,5 @@
 ---
-applyTo: "**/*.test.*,**/*.spec.*,src/**/__tests__/**,src-api/**/tests/**"
+applyTo: "**/*.test.*,**/*.spec.*,src/**/__tests__/**,crates/**/tests/**,tests/e2e/**/*.hurl"
 ---
 
 <!-- GENERATED FROM .claude/ — DO NOT EDIT BY HAND -->
@@ -47,11 +47,49 @@ If you write implementation before tests, delete the implementation and start ov
 ## API Testing (Rust)
 
 - Unit tests for domain logic (pure functions, business rules)
-- Integration tests for routes using test helpers
+- Integration tests for routes using `tower::ServiceExt::oneshot` (in-process, no TCP)
 - Database tests against a real PostgreSQL instance (no mocks)
 - Test multi-tenant isolation: verify workspace A cannot access workspace B data
+- Test RLS enforcement: `TenantTx` scoped queries should filter by workspace_id
+- Test cross-workspace rejection: inserts with wrong workspace_id should fail
 
-## E2E Testing (Playwright)
+### Integration Test Patterns
+
+```rust
+// Test helpers in tests/common/mod.rs
+// #![allow(dead_code)] required — each test binary compiles its own copy
+// of the common module, so helpers used by some tests but not all
+// trigger false dead_code warnings.
+
+let state = common::test_state().await;  // Pool + migrations
+let app = grove_api::create_app(state);
+let response = app.oneshot(request).await.unwrap();
+```
+
+- Use `unique_org_id()` for test isolation — avoids collisions across parallel tests
+- Always `cleanup_org()` at end of tests to remove test data
+- Test RLS with `TenantTx::begin(&pool, workspace_id)` + raw SQL queries
+
+## API E2E Testing (Hurl)
+
+- `.hurl` files in `tests/e2e/` — declarative HTTP request/response tests
+- Run with `./scripts/e2e.sh` (builds API, starts server, runs tests, cleans up)
+- Run single file: `./scripts/e2e.sh health.hurl`
+- Tests run against a real running server over HTTP (not in-process)
+- Use `[Captures]` to chain responses (e.g., capture `ws_id` from create, use in get)
+- Use `[Asserts]` for JSONPath assertions, status codes, headers
+
+### When to Use Hurl vs Integration Tests
+
+| Use Case                           | Tool                                            |
+| ---------------------------------- | ----------------------------------------------- |
+| Domain logic, port implementations | Rust unit/integration tests                     |
+| Route behavior, error mapping      | `tower::ServiceExt::oneshot` integration tests  |
+| Full HTTP lifecycle (real TCP)     | Hurl e2e tests                                  |
+| Multi-tenant RLS enforcement       | Rust integration tests (need `TenantTx` access) |
+| API contract validation            | Hurl e2e tests                                  |
+
+## UI E2E Testing (Playwright)
 
 - Test critical user flows end-to-end
 - Test in the Tauri desktop context when possible

@@ -29,9 +29,17 @@ Run the full CI pipeline and report structured results.
 
 ```bash
 cargo fmt -p grove-domain --check    # Format check
-cargo clippy -p grove-domain -- -D warnings  # Clippy
-cargo test -p grove-domain           # Unit tests
+cargo clippy --workspace -- -D warnings      # Clippy (all crates)
+cargo test -p grove-domain           # Domain unit tests
+cargo test -p grove-api              # API integration tests (needs PostgreSQL)
 cargo build --workspace              # Workspace build
+```
+
+### API E2E Checks (Hurl)
+
+```bash
+./scripts/e2e.sh                     # All API e2e tests (starts/stops server)
+./scripts/e2e.sh health.hurl         # Single e2e test file
 ```
 
 ### Frontend Checks
@@ -58,8 +66,13 @@ pnpm build     # Production build
 ### Rust
 - Format: PASS/FAIL
 - Lint (Clippy): PASS/FAIL (N warnings)
-- Unit tests: PASS/FAIL (N passed, M failed)
+- Domain tests: PASS/FAIL (N passed, M failed)
+- API integration tests: PASS/FAIL (N passed, M failed)
 - Workspace build: PASS/FAIL
+
+### API E2E (Hurl)
+- Files: N executed, M passed
+- Requests: N total
 
 ### Frontend
 - Type check: PASS/FAIL
