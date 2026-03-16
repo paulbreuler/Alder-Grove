@@ -10,7 +10,9 @@
     "ai:generate": "tsx scripts/generate-ai-configs.ts",
     "ai:check": "tsx scripts/generate-ai-configs.ts --check",
     "prepare": "husky",
-    "generate:types": "cargo test -p grove-domain --features ts -- export_bindings 2>/dev/null && mkdir -p src/generated && cp -r crates/grove-domain/bindings/* src/generated/ && node scripts/generate-barrel.mjs && echo '✓ TypeScript types generated in src/generated/'",
+    "generate:types": "node scripts/generate-types.mjs",
+    "precheck": "node scripts/generate-types.mjs",
+    "pretest": "node scripts/generate-types.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },

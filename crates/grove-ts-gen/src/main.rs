@@ -3,6 +3,7 @@ fn main() {
     println!();
     println!("Run: pnpm generate:types");
     println!();
-    println!("This runs `cargo test -p grove-domain --features ts` with");
-    println!("TS_RS_EXPORT_DIR=src/generated, then generates a barrel file.");
+    println!("This runs `cargo test -p grove-domain --features ts` to export");
+    println!("bindings, copies them to src/generated/, and creates a barrel file.");
+    println!("Generation also runs automatically before `pnpm check` and `pnpm test`.");
 }

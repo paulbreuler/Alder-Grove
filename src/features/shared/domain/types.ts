@@ -6,7 +6,9 @@
  */
 export type { AiProvenance } from '../../../generated';
 
-/** Type guard for AI-authored entities. */
-export function isAiAuthored(entity: { ai_authored: boolean }): boolean {
+/** Type predicate narrowing entities to AI-authored. */
+export function isAiAuthored(
+  entity: { ai_authored: boolean },
+): entity is { ai_authored: true } {
   return entity.ai_authored;
 }
