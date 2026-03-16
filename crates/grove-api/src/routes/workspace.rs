@@ -45,7 +45,12 @@ pub async fn list(
     Path(org_id): Path<String>,
 ) -> Result<axum::Json<Vec<WorkspaceResponse>>, ApiError> {
     let workspaces = state.workspace_repo.find_all(&org_id).await?;
-    Ok(axum::Json(workspaces.into_iter().map(WorkspaceResponse::from).collect()))
+    Ok(axum::Json(
+        workspaces
+            .into_iter()
+            .map(WorkspaceResponse::from)
+            .collect(),
+    ))
 }
 
 /// GET /orgs/{org_id}/workspaces/{ws_id}
@@ -81,7 +86,10 @@ pub async fn create(
     };
 
     let created = state.workspace_repo.create(&workspace).await?;
-    Ok((StatusCode::CREATED, axum::Json(WorkspaceResponse::from(created))))
+    Ok((
+        StatusCode::CREATED,
+        axum::Json(WorkspaceResponse::from(created)),
+    ))
 }
 
 /// PUT /orgs/{org_id}/workspaces/{ws_id}

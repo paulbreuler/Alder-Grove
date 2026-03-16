@@ -43,26 +43,25 @@ impl ApiError {
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let (status, detail) = match &self {
-            Self::Domain(DomainError::NotFound { entity, id }) => (
-                StatusCode::NOT_FOUND,
-                format!("{entity} {id} not found"),
-            ),
-            Self::Domain(DomainError::Validation(msg)) => (
-                StatusCode::UNPROCESSABLE_ENTITY,
-                msg.clone(),
-            ),
+            Self::Domain(DomainError::NotFound { entity, id }) => {
+                (StatusCode::NOT_FOUND, format!("{entity} {id} not found"))
+            }
+            Self::Domain(DomainError::Validation(msg)) => {
+                (StatusCode::UNPROCESSABLE_ENTITY, msg.clone())
+            }
             Self::Domain(DomainError::Conflict(msg)) => (StatusCode::CONFLICT, msg.clone()),
             // Domain "Unauthorized" = failed authorization (authenticated but
             // not permitted). HTTP 401 is handled by ApiError::Unauthorized
             // (missing/invalid JWT — added when Clerk auth lands).
-            Self::Domain(DomainError::Unauthorized(msg)) => {
-                (StatusCode::FORBIDDEN, msg.clone())
-            }
+            Self::Domain(DomainError::Unauthorized(msg)) => (StatusCode::FORBIDDEN, msg.clone()),
             Self::Domain(DomainError::Internal(msg))
             | Self::Database(msg)
             | Self::Internal(msg) => {
                 tracing::error!(error = %msg, "internal server error");
-                (StatusCode::INTERNAL_SERVER_ERROR, "internal server error".into())
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "internal server error".into(),
+                )
             }
             Self::NotFound(msg) => (StatusCode::NOT_FOUND, msg.clone()),
             Self::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg.clone()),

@@ -71,11 +71,7 @@ impl WorkspaceRepository for PgWorkspaceRepo {
         Ok(rows.into_iter().map(Workspace::from).collect())
     }
 
-    async fn find_by_id(
-        &self,
-        org_id: &str,
-        id: Uuid,
-    ) -> Result<Option<Workspace>, DomainError> {
+    async fn find_by_id(&self, org_id: &str, id: Uuid) -> Result<Option<Workspace>, DomainError> {
         let row = sqlx::query_as::<_, WorkspaceRow>(
             "SELECT id, org_id, name, description, created_at, updated_at FROM workspaces WHERE id = $1 AND org_id = $2",
         )

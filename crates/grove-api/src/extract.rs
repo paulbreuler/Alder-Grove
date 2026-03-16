@@ -19,10 +19,7 @@ where
 {
     type Rejection = ApiError;
 
-    async fn from_request(
-        req: axum::extract::Request,
-        state: &S,
-    ) -> Result<Self, Self::Rejection> {
+    async fn from_request(req: axum::extract::Request, state: &S) -> Result<Self, Self::Rejection> {
         let result = axum::Json::<T>::from_request(req, state).await;
         match result {
             Ok(axum::Json(value)) => Ok(Json(value)),

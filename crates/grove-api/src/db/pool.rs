@@ -17,9 +17,7 @@ pub async fn create_pool(database_url: &str) -> Result<PgPool, sqlx::Error> {
             Box::pin(async move {
                 // Split into separate statements — prepared statements
                 // don't allow multiple commands in a single query.
-                sqlx::query("RESET ROLE")
-                    .execute(&mut *conn)
-                    .await?;
+                sqlx::query("RESET ROLE").execute(&mut *conn).await?;
                 sqlx::query("RESET app.current_workspace_id")
                     .execute(&mut *conn)
                     .await?;

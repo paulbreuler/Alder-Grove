@@ -5,7 +5,7 @@ pub mod extract;
 pub mod routes;
 pub mod state;
 
-use axum::{routing::get, Router};
+use axum::{Router, routing::get};
 use problem_details::ProblemDetails;
 use state::AppState;
 
