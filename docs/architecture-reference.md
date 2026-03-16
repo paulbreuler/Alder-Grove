@@ -26,7 +26,7 @@
 | API         | Rust (Axum 0.8)                     | Cloud-deployed, independent      |
 | Database    | PostgreSQL 18                       | Multi-tenant, workspace-scoped   |
 | Auth        | Clerk                               | JWT on API, ClerkProvider on FE  |
-| Testing     | Vitest (unit), Playwright (e2e)     | TDD mandatory                    |
+| Testing     | Vitest (unit), Hurl (API e2e), Playwright (UI e2e) | TDD mandatory           |
 | Package Mgr | pnpm workspaces                     | Monorepo                         |
 | CRDT        | Yrs (Rust) + Yjs (JS)               | Real-time collaborative editing  |
 | Rust WS     | Cargo workspace                     | 5 crates under `crates/`         |
@@ -231,7 +231,7 @@ Carried forward and refined:
 ## API Design
 
 - **Error format**: RFC 9457 Problem Details
-- **Documentation**: utoipa + Swagger UI (OpenAPI)
+- **Error responses**: `problem_details` crate (RFC 9457)
 - **Migrations**: SQL files, versioned, run at startup
 - **Auth middleware**: JWKS fetch, JWT decode, org/workspace extraction
 

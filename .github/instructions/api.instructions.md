@@ -1,12 +1,12 @@
 ---
-applyTo: "crates/grove-api/**/*.rs,crates/grove-domain/**/*.rs,crates/grove-sync/**/*.rs"
+applyTo: "crates/grove-api/**/*.rs,crates/grove-domain/**/*.rs"
 ---
 
 <!-- GENERATED FROM .claude/ — DO NOT EDIT BY HAND -->
 
 # API Rules (Rust Axum 0.8)
 
-**Crates**: axum 0.8, sqlx 0.8 (PgPool), tower/tower-http, utoipa, tracing
+**Crates**: axum 0.8, sqlx 0.8 (PgPool), tower/tower-http, problem_details, tracing
 
 ## Hexagonal Layers
 
@@ -111,8 +111,10 @@ crates/grove-domain/src/
 - Never expose internal error details (stack traces, SQL errors) to clients
 - Log errors with structured `tracing::error!`
 
-## API Documentation
+## API Error Responses (RFC 9457)
 
-- All routes documented with `#[utoipa::path]` attributes
-- OpenAPI spec served at `/api-docs`
-- Swagger UI available in development
+- Use the `problem_details` crate (0.9) with the `axum` feature
+- `ProblemDetails::from_status_code(status).with_detail(detail)` in `ApiError::into_response`
+- Content-Type and body structure handled automatically by the crate
+- Custom `extract::Json` and `extract::Path` route Axum rejections through `ApiError`
+  so framework-level errors also produce Problem Details responses
