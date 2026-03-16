@@ -12,6 +12,12 @@ node_modules/
 dist/
 target/
 
+# Generated TypeScript types (regenerate with: pnpm generate:types)
+src/generated/
+
+# ts-rs default output (generated during cargo test)
+crates/grove-domain/bindings/
+
 # Environment
 .env
 .env.local

@@ -6,6 +6,8 @@ use crate::common::AiProvenance;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub enum JourneyStatus {
     Draft,
     Active,
@@ -14,6 +16,8 @@ pub enum JourneyStatus {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub struct Journey {
     pub id: Uuid,
     pub workspace_id: Uuid,

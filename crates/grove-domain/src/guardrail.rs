@@ -4,6 +4,8 @@ use uuid::Uuid;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub enum GuardrailCategory {
     Prohibition,
     Requirement,
@@ -13,6 +15,8 @@ pub enum GuardrailCategory {
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub enum GuardrailScope {
     Workspace,
     Session,
@@ -20,6 +24,8 @@ pub enum GuardrailScope {
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub enum GuardrailEnforcement {
     Enforced,
     Advisory,
@@ -27,6 +33,8 @@ pub enum GuardrailEnforcement {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "type", rename_all = "snake_case")]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub enum GuardrailRule {
     Prohibition {
         description: String,
@@ -51,6 +59,8 @@ pub enum GuardrailRule {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub enum GuardrailVerdict {
     /// Action is allowed — no rule matched
     Allowed,
@@ -67,6 +77,8 @@ pub enum GuardrailVerdict {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub struct Guardrail {
     pub id: Uuid,
     pub workspace_id: Uuid,

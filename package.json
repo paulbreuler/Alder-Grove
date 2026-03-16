@@ -10,6 +10,9 @@
     "ai:generate": "tsx scripts/generate-ai-configs.ts",
     "ai:check": "tsx scripts/generate-ai-configs.ts --check",
     "prepare": "husky",
+    "generate:types": "node scripts/generate-types.mjs",
+    "precheck": "node scripts/generate-types.mjs",
+    "pretest": "node scripts/generate-types.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },
