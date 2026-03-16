@@ -1,11 +1,11 @@
-use axum::extract::{Path, State};
+use axum::extract::State;
 use axum::http::StatusCode;
-use axum::Json;
 use grove_domain::workspace::Workspace;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::error::ApiError;
+use crate::extract::{Json, Path};
 use crate::state::AppState;
 
 #[derive(Serialize)]
@@ -43,22 +43,22 @@ pub struct UpdateWorkspaceRequest {
 pub async fn list(
     State(state): State<AppState>,
     Path(org_id): Path<String>,
-) -> Result<Json<Vec<WorkspaceResponse>>, ApiError> {
+) -> Result<axum::Json<Vec<WorkspaceResponse>>, ApiError> {
     let workspaces = state.workspace_repo.find_all(&org_id).await?;
-    Ok(Json(workspaces.into_iter().map(WorkspaceResponse::from).collect()))
+    Ok(axum::Json(workspaces.into_iter().map(WorkspaceResponse::from).collect()))
 }
 
 /// GET /orgs/{org_id}/workspaces/{ws_id}
 pub async fn get(
     State(state): State<AppState>,
     Path((org_id, ws_id)): Path<(String, Uuid)>,
-) -> Result<Json<WorkspaceResponse>, ApiError> {
+) -> Result<axum::Json<WorkspaceResponse>, ApiError> {
     let ws = state
         .workspace_repo
         .find_by_id(&org_id, ws_id)
         .await?
         .ok_or_else(|| ApiError::NotFound(format!("workspace {ws_id}")))?;
-    Ok(Json(WorkspaceResponse::from(ws)))
+    Ok(axum::Json(WorkspaceResponse::from(ws)))
 }
 
 /// POST /orgs/{org_id}/workspaces
@@ -66,7 +66,7 @@ pub async fn create(
     State(state): State<AppState>,
     Path(org_id): Path<String>,
     Json(body): Json<CreateWorkspaceRequest>,
-) -> Result<(StatusCode, Json<WorkspaceResponse>), ApiError> {
+) -> Result<(StatusCode, axum::Json<WorkspaceResponse>), ApiError> {
     if body.name.trim().is_empty() {
         return Err(ApiError::BadRequest("name cannot be empty".into()));
     }
@@ -81,7 +81,7 @@ pub async fn create(
     };
 
     let created = state.workspace_repo.create(&workspace).await?;
-    Ok((StatusCode::CREATED, Json(WorkspaceResponse::from(created))))
+    Ok((StatusCode::CREATED, axum::Json(WorkspaceResponse::from(created))))
 }
 
 /// PUT /orgs/{org_id}/workspaces/{ws_id}
@@ -89,7 +89,7 @@ pub async fn update(
     State(state): State<AppState>,
     Path((org_id, ws_id)): Path<(String, Uuid)>,
     Json(body): Json<UpdateWorkspaceRequest>,
-) -> Result<Json<WorkspaceResponse>, ApiError> {
+) -> Result<axum::Json<WorkspaceResponse>, ApiError> {
     if body.name.trim().is_empty() {
         return Err(ApiError::BadRequest("name cannot be empty".into()));
     }
@@ -107,7 +107,7 @@ pub async fn update(
     };
 
     let result = state.workspace_repo.update(&updated_ws).await?;
-    Ok(Json(WorkspaceResponse::from(result)))
+    Ok(axum::Json(WorkspaceResponse::from(result)))
 }
 
 /// DELETE /orgs/{org_id}/workspaces/{ws_id}

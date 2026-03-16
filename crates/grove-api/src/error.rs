@@ -1,6 +1,8 @@
+use axum::extract::rejection::{JsonRejection, PathRejection};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use grove_domain::error::DomainError;
+use problem_details::ProblemDetails;
 
 #[derive(Debug, thiserror::Error)]
 pub enum ApiError {
@@ -24,6 +26,12 @@ pub enum ApiError {
 
     #[error("{0}")]
     Internal(String),
+
+    #[error("{0}")]
+    JsonPayload(#[from] JsonRejection),
+
+    #[error("{0}")]
+    PathParam(#[from] PathRejection),
 }
 
 impl ApiError {
@@ -57,20 +65,12 @@ impl IntoResponse for ApiError {
             Self::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg.clone()),
             Self::Unauthorized => (StatusCode::UNAUTHORIZED, "unauthorized".into()),
             Self::Forbidden => (StatusCode::FORBIDDEN, "forbidden".into()),
+            Self::JsonPayload(rejection) => (rejection.status(), rejection.body_text()),
+            Self::PathParam(rejection) => (rejection.status(), rejection.body_text()),
         };
 
-        let body = serde_json::json!({
-            "type": "about:blank",
-            "title": status.canonical_reason().unwrap_or("Error"),
-            "status": status.as_u16(),
-            "detail": detail,
-        });
-
-        let mut response = (status, axum::Json(body)).into_response();
-        response.headers_mut().insert(
-            axum::http::header::CONTENT_TYPE,
-            axum::http::HeaderValue::from_static("application/problem+json"),
-        );
-        response
+        ProblemDetails::from_status_code(status)
+            .with_detail(detail)
+            .into_response()
     }
 }

@@ -12,6 +12,7 @@ tower = "0.5"
 tower-http = { version = "0.6", features = ["trace"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+problem_details = { version = "0.9", features = ["axum"] }
 thiserror = "2"
 async-trait = "0.1"
 serde = { version = "1", features = ["derive"] }
