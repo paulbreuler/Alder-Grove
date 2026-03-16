@@ -7,6 +7,7 @@ Content-Type: application/json
     "name": "   "
 }
 HTTP 400
+Content-Type: application/problem+json
 [Asserts]
 jsonpath "$.status" == 400
 jsonpath "$.detail" == "name cannot be empty"
@@ -20,3 +21,6 @@ HTTP 422
 # --- Nonexistent workspace returns 404 ---
 GET http://localhost:3001/orgs/e2e_org/workspaces/01970000-0000-7000-0000-000000000000
 HTTP 404
+Content-Type: application/problem+json
+[Asserts]
+jsonpath "$.status" == 404

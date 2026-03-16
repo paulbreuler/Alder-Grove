@@ -47,7 +47,10 @@ impl IntoResponse for ApiError {
             Self::Domain(DomainError::Unauthorized(_)) => {
                 (StatusCode::FORBIDDEN, "forbidden".into())
             }
-            Self::Domain(DomainError::Internal(_)) | Self::Database(_) | Self::Internal(_) => {
+            Self::Domain(DomainError::Internal(msg))
+            | Self::Database(msg)
+            | Self::Internal(msg) => {
+                tracing::error!(error = %msg, "internal server error");
                 (StatusCode::INTERNAL_SERVER_ERROR, "internal server error".into())
             }
             Self::NotFound(msg) => (StatusCode::NOT_FOUND, msg.clone()),
