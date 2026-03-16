@@ -57,7 +57,7 @@ pub async fn get(
         .workspace_repo
         .find_by_id(&org_id, ws_id)
         .await?
-        .ok_or_else(|| ApiError::NotFound(format!("workspace {ws_id}")))?;
+        .ok_or_else(|| ApiError::NotFound(format!("workspace {ws_id} not found")))?;
     Ok(axum::Json(WorkspaceResponse::from(ws)))
 }
 
@@ -98,7 +98,7 @@ pub async fn update(
         .workspace_repo
         .find_by_id(&org_id, ws_id)
         .await?
-        .ok_or_else(|| ApiError::NotFound(format!("workspace {ws_id}")))?;
+        .ok_or_else(|| ApiError::NotFound(format!("workspace {ws_id} not found")))?;
 
     let updated_ws = Workspace {
         name: body.name.trim().to_string(),

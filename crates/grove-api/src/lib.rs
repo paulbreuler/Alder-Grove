@@ -6,6 +6,7 @@ pub mod routes;
 pub mod state;
 
 use axum::{routing::get, Router};
+use problem_details::ProblemDetails;
 use state::AppState;
 
 pub fn create_app(state: AppState) -> Router {
@@ -21,5 +22,9 @@ pub fn create_app(state: AppState) -> Router {
                 .put(routes::workspace::update)
                 .delete(routes::workspace::delete),
         )
+        .fallback(|| async {
+            ProblemDetails::from_status_code(axum::http::StatusCode::NOT_FOUND)
+                .with_detail("route not found")
+        })
         .with_state(state)
 }

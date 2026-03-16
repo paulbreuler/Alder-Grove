@@ -52,8 +52,11 @@ impl IntoResponse for ApiError {
                 msg.clone(),
             ),
             Self::Domain(DomainError::Conflict(msg)) => (StatusCode::CONFLICT, msg.clone()),
-            Self::Domain(DomainError::Unauthorized(_)) => {
-                (StatusCode::FORBIDDEN, "forbidden".into())
+            // Domain "Unauthorized" = failed authorization (authenticated but
+            // not permitted). HTTP 401 is handled by ApiError::Unauthorized
+            // (missing/invalid JWT — added when Clerk auth lands).
+            Self::Domain(DomainError::Unauthorized(msg)) => {
+                (StatusCode::FORBIDDEN, msg.clone())
             }
             Self::Domain(DomainError::Internal(msg))
             | Self::Database(msg)

@@ -16,24 +16,33 @@ pub async fn test_state() -> AppState {
         .await
         .expect("failed to connect to test database");
 
-    // Run migrations
-    sqlx::raw_sql(include_str!("../../migrations/001_initial_schema.sql"))
-        .execute(&pool)
-        .await
-        .ok(); // Ignore errors if already applied
-    sqlx::raw_sql(include_str!("../../migrations/002_acp_schema.sql"))
-        .execute(&pool)
-        .await
-        .ok();
-    sqlx::raw_sql(include_str!("../../migrations/003_collaborative_documents.sql"))
-        .execute(&pool)
-        .await
-        .ok();
+    run_migrations(&pool).await;
 
     AppState {
         workspace_repo: Arc::new(PgWorkspaceRepo::new(pool.clone())),
         pool,
         config,
+    }
+}
+
+async fn run_migrations(pool: &PgPool) {
+    let migrations: &[&str] = &[
+        include_str!("../../migrations/001_initial_schema.sql"),
+        include_str!("../../migrations/002_acp_schema.sql"),
+        include_str!("../../migrations/003_collaborative_documents.sql"),
+    ];
+
+    for sql in migrations {
+        match sqlx::raw_sql(sql).execute(pool).await {
+            Ok(_) => {}
+            Err(e) => {
+                let msg = e.to_string();
+                // Ignore "already exists" errors from re-running migrations
+                if !msg.contains("already exists") && !msg.contains("duplicate") {
+                    panic!("migration failed: {msg}");
+                }
+            }
+        }
     }
 }
 
