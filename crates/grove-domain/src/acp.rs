@@ -3,6 +3,8 @@ use uuid::Uuid;
 
 /// Summary of a gate for ACP messaging — lighter than the full Gate entity.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub struct GateSummary {
     pub id: Uuid,
     pub reason: String,
@@ -16,6 +18,8 @@ pub struct GateSummary {
 /// gate requests, session state changes, and errors.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "type", content = "payload", rename_all = "snake_case")]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub enum AcpMessage {
     #[serde(rename = "gate_decision")]
     GateDecision {
@@ -43,6 +47,8 @@ pub enum AcpMessage {
 /// Tagged by `"channel"` to distinguish frame types.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "channel")]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub enum WsFrame {
     #[serde(rename = "acp")]
     Acp { message: AcpMessage },

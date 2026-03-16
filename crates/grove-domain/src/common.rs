@@ -5,6 +5,8 @@ use crate::error::DomainError;
 /// AI authorship metadata embedded in content entities.
 /// Flattened into parent structs via `#[serde(flatten)]`.
 #[derive(Debug, Clone, Default, Serialize, PartialEq)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub struct AiProvenance {
     ai_authored: bool,
     ai_confidence: Option<f32>,

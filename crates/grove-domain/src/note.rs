@@ -6,6 +6,8 @@ use crate::common::AiProvenance;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub enum NoteCategory {
     Decision,
     Learning,
@@ -16,6 +18,8 @@ pub enum NoteCategory {
 /// All entity types that can be linked to a note.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub enum LinkableEntityType {
     Journey,
     Step,
@@ -30,6 +34,8 @@ pub enum LinkableEntityType {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub struct Note {
     pub id: Uuid,
     pub workspace_id: Uuid,
@@ -43,6 +49,8 @@ pub struct Note {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub struct NoteLink {
     pub id: Uuid,
     pub note_id: Uuid,

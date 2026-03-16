@@ -6,6 +6,8 @@ use crate::common::AiProvenance;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub enum SpecificationStatus {
     Draft,
     Ready,
@@ -15,6 +17,8 @@ pub enum SpecificationStatus {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub struct RequirementItem {
     pub description: String,
     pub met: bool,
@@ -22,6 +26,8 @@ pub struct RequirementItem {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 #[serde(default)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub struct SpecificationRequirements {
     pub functional: Vec<RequirementItem>,
     pub non_functional: Vec<RequirementItem>,
@@ -29,18 +35,24 @@ pub struct SpecificationRequirements {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub struct Dependency {
     pub specification_id: Uuid,
     pub relationship: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub struct ErrorHandlingStrategy {
     pub scenario: String,
     pub response: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub struct TestingStrategy {
     pub unit: String,
     pub integration: String,
@@ -48,6 +60,8 @@ pub struct TestingStrategy {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub struct ComponentSpec {
     pub path: String,
     pub action: String,
@@ -55,6 +69,8 @@ pub struct ComponentSpec {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub struct Specification {
     pub id: Uuid,
     pub workspace_id: Uuid,

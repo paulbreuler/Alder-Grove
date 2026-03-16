@@ -7,6 +7,8 @@ use crate::error::DomainError;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub enum StepStatus {
     Pending,
     InProgress,
@@ -15,6 +17,8 @@ pub enum StepStatus {
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub struct Step {
     pub id: Uuid,
     pub journey_id: Uuid,

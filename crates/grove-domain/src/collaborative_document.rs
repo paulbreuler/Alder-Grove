@@ -5,6 +5,8 @@ use uuid::Uuid;
 /// Entity types that support CRDT collaborative editing.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub enum CollaborativeEntityType {
     Specification,
     Task,
@@ -18,6 +20,8 @@ pub enum CollaborativeEntityType {
 /// Implementation detail of the sync layer — stores Yrs document state
 /// for reconnect/resume during real-time co-editing.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub struct CollaborativeDocument {
     pub id: Uuid,
     pub workspace_id: Uuid,
