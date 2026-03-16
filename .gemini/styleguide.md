@@ -63,6 +63,10 @@ cargo build -p grove-sync    # Build CRDT sync crate
 cargo test -p grove-sync     # Test CRDT sync crate
 cargo run -p grove-api       # Run API server
 
+# API E2E (Hurl)
+./scripts/e2e.sh             # Run all API e2e tests (starts/stops server)
+./scripts/e2e.sh health.hurl # Run a single e2e test file
+
 # Desktop
 cargo tauri dev           # Run Tauri dev mode
 cargo tauri build         # Build desktop app

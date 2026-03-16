@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Dispatch superpowers code reviewer with Alder Grove context
+description: Dispatch domain-specific code reviewers based on what changed
 ---
 
 <!-- GENERATED FROM .claude/ — DO NOT EDIT BY HAND -->
