@@ -66,12 +66,19 @@ HTTP 200
 [Asserts]
 jsonpath "$" count >= 2
 
-# --- List with enabled filter ---
+# --- List with enabled=true filter ---
 GET http://localhost:3001/orgs/e2e_gatedef_org/workspaces/{{ws_id}}/gate-definitions?enabled=true
 HTTP 200
 [Asserts]
 jsonpath "$" count == 1
 jsonpath "$[0].name" == "Code Deletion Review"
+
+# --- List with enabled=false filter ---
+GET http://localhost:3001/orgs/e2e_gatedef_org/workspaces/{{ws_id}}/gate-definitions?enabled=false
+HTTP 200
+[Asserts]
+jsonpath "$" count == 1
+jsonpath "$[0].name" == "Manual Review Gate"
 
 # --- Update gate definition ---
 PUT http://localhost:3001/orgs/e2e_gatedef_org/workspaces/{{ws_id}}/gate-definitions/{{gatedef_id}}

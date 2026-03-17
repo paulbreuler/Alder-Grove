@@ -69,6 +69,7 @@ pub trait SessionRepository: CrudRepository<Session> {
 #[async_trait::async_trait]
 pub trait GateDefinitionRepository: CrudRepository<GateDefinition> {
     async fn find_enabled(&self, workspace_id: Uuid) -> Result<Vec<GateDefinition>, DomainError>;
+    async fn find_disabled(&self, workspace_id: Uuid) -> Result<Vec<GateDefinition>, DomainError>;
 }
 
 /// Gate repository — session-scoped CRUD + pending filtering.
@@ -77,10 +78,12 @@ pub trait GateRepository: CrudRepository<Gate> {
     async fn find_pending(&self, session_id: Uuid) -> Result<Vec<Gate>, DomainError>;
 }
 
-/// Event repository — scoped by session_id, append-only (create only).
+/// Event repository — scoped by workspace_id + session_id, append-only (create only).
+///
+/// `workspace_id` is required for RLS-scoped TenantTx isolation.
 #[async_trait::async_trait]
 pub trait EventRepository: Send + Sync {
-    async fn find_all(&self, session_id: Uuid) -> Result<Vec<Event>, DomainError>;
+    async fn find_all(&self, workspace_id: Uuid, session_id: Uuid) -> Result<Vec<Event>, DomainError>;
     async fn create(&self, event: &Event) -> Result<Event, DomainError>;
 }
 

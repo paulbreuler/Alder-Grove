@@ -291,4 +291,25 @@ impl GateDefinitionRepository for PgGateDefinitionRepo {
 
         rows.into_iter().map(GateDefinition::try_from).collect()
     }
+
+    async fn find_disabled(&self, workspace_id: Uuid) -> Result<Vec<GateDefinition>, DomainError> {
+        let mut tx = TenantTx::begin(&self.pool, workspace_id)
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))?;
+
+        let query = format!(
+            "SELECT {SELECT_COLS} FROM gate_definitions \
+             WHERE enabled = false ORDER BY sort_order, created_at"
+        );
+        let rows = sqlx::query_as::<_, GateDefinitionRow>(&query)
+            .fetch_all(tx.conn())
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))?;
+
+        tx.commit()
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))?;
+
+        rows.into_iter().map(GateDefinition::try_from).collect()
+    }
 }

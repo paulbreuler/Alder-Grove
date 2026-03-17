@@ -71,7 +71,7 @@ pub async fn list(
         .await?
         .ok_or_else(|| ApiError::NotFound(format!("session {session_id} not found")))?;
 
-    let events = state.event_repo.find_all(session_id).await?;
+    let events = state.event_repo.find_all(ws_id, session_id).await?;
     Ok(axum::Json(
         events.into_iter().map(EventResponse::from).collect(),
     ))

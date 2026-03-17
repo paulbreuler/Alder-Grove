@@ -2,7 +2,7 @@ services:
   db:
     image: postgres:18
     ports:
-      - "5432:5432"
+      - "5463:5432"
     environment:
       POSTGRES_USER: grove
       POSTGRES_PASSWORD: grove_dev

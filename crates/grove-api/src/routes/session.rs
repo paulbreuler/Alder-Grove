@@ -134,6 +134,13 @@ pub async fn create(
         return Err(ApiError::BadRequest("initiated_by cannot be empty".into()));
     }
 
+    // Verify agent belongs to this workspace (prevents cross-workspace references)
+    state
+        .agent_repo
+        .find_by_id(ws_id, body.agent_id)
+        .await?
+        .ok_or_else(|| ApiError::NotFound(format!("agent {} not found", body.agent_id)))?;
+
     let now = chrono::Utc::now();
     let session = Session::new(
         Uuid::now_v7(),
@@ -177,6 +184,13 @@ pub async fn update(
     if body.initiated_by.trim().is_empty() {
         return Err(ApiError::BadRequest("initiated_by cannot be empty".into()));
     }
+
+    // Verify agent belongs to this workspace (prevents cross-workspace references)
+    state
+        .agent_repo
+        .find_by_id(ws_id, body.agent_id)
+        .await?
+        .ok_or_else(|| ApiError::NotFound(format!("agent {} not found", body.agent_id)))?;
 
     let existing = state
         .session_repo

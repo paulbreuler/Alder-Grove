@@ -149,6 +149,19 @@ HTTP 404
 [Asserts]
 jsonpath "$.status" == 404
 
+# --- Validation: agent_id from different workspace is rejected ---
+POST http://localhost:3001/orgs/e2e_session_org/workspaces/{{ws_id}}/sessions
+Content-Type: application/json
+{
+    "agent_id": "00000000-0000-0000-0000-000000000000",
+    "title": "Foreign agent session",
+    "intent": "implement",
+    "initiated_by": "user_e2e"
+}
+HTTP 404
+[Asserts]
+jsonpath "$.status" == 404
+
 # --- Validation: empty title ---
 POST http://localhost:3001/orgs/e2e_session_org/workspaces/{{ws_id}}/sessions
 Content-Type: application/json

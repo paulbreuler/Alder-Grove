@@ -105,10 +105,10 @@ pub async fn list(
 ) -> Result<axum::Json<Vec<GateDefinitionResponse>>, ApiError> {
     resolve_workspace(&*state.workspace_repo, &org_id, ws_id).await?;
 
-    let gate_defs = if query.enabled == Some(true) {
-        state.gate_definition_repo.find_enabled(ws_id).await?
-    } else {
-        state.gate_definition_repo.find_all(ws_id).await?
+    let gate_defs = match query.enabled {
+        Some(true) => state.gate_definition_repo.find_enabled(ws_id).await?,
+        Some(false) => state.gate_definition_repo.find_disabled(ws_id).await?,
+        None => state.gate_definition_repo.find_all(ws_id).await?,
     };
 
     Ok(axum::Json(

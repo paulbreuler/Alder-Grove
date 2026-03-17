@@ -108,31 +108,22 @@ const SELECT_COLS: &str = "\
 
 #[async_trait]
 impl EventRepository for PgEventRepo {
-    async fn find_all(&self, session_id: Uuid) -> Result<Vec<Event>, DomainError> {
-        // Events use the workspace_id from the session's RLS context.
-        // We need a workspace_id to set up TenantTx. Since events reference
-        // sessions which are workspace-scoped, we query the session first
-        // to get workspace_id. However, the caller must provide it.
-        //
-        // The EventRepository trait takes only session_id, so we do a
-        // superuser read to find the workspace_id, then scope via TenantTx.
-        //
-        // Alternative: use a pool-level query without RLS for this read-only
-        // lookup. For now, we use an unscoped query since events are always
-        // fetched in the context of a route that already validated the workspace.
-        //
-        // NOTE: The RLS policy on events requires workspace_id context.
-        // Since the route handler already validated the workspace, we trust
-        // the session_id filter here. For full RLS enforcement we would need
-        // the workspace_id passed in. This is a known limitation of the
-        // EventRepository trait signature — it can be evolved later.
+    async fn find_all(&self, workspace_id: Uuid, session_id: Uuid) -> Result<Vec<Event>, DomainError> {
+        let mut tx = TenantTx::begin(&self.pool, workspace_id)
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))?;
+
         let rows = sqlx::query_as::<_, EventRow>(&format!(
             "SELECT {SELECT_COLS} FROM events WHERE session_id = $1 ORDER BY created_at"
         ))
         .bind(session_id)
-        .fetch_all(&self.pool)
+        .fetch_all(tx.conn())
         .await
         .map_err(|e| DomainError::Internal(e.to_string()))?;
+
+        tx.commit()
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))?;
 
         rows.into_iter().map(Event::try_from).collect()
     }

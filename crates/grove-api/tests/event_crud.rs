@@ -72,8 +72,8 @@ async fn event_create_and_list() {
     let created2 = repo.create(&e2).await.unwrap();
     assert_eq!(created2.category, EventCategory::Action);
 
-    // List events for session — should contain both
-    let events = repo.find_all(session_id).await.unwrap();
+    // List events for session — workspace_id required for RLS
+    let events = repo.find_all(ws_id, session_id).await.unwrap();
     assert_eq!(events.len(), 2);
     assert!(events.iter().any(|e| e.id == created1.id));
     assert!(events.iter().any(|e| e.id == created2.id));
@@ -98,11 +98,11 @@ async fn event_scoped_to_session() {
     let created = repo.create(&event).await.unwrap();
 
     // Events for session A should include it
-    let events_a = repo.find_all(session_a).await.unwrap();
+    let events_a = repo.find_all(ws_id, session_a).await.unwrap();
     assert!(events_a.iter().any(|e| e.id == created.id));
 
     // Events for session B should NOT include it
-    let events_b = repo.find_all(session_b).await.unwrap();
+    let events_b = repo.find_all(ws_id, session_b).await.unwrap();
     assert!(
         !events_b.iter().any(|e| e.id == created.id),
         "Event from session_a should not appear in session_b list"
@@ -123,7 +123,7 @@ async fn event_list_empty_session_returns_empty() {
     let repo = &state.event_repo;
 
     // List events for a session with no events
-    let events = repo.find_all(session_id).await.unwrap();
+    let events = repo.find_all(ws_id, session_id).await.unwrap();
     assert!(events.is_empty());
 
     // Cleanup
@@ -155,11 +155,45 @@ async fn event_preserves_data_payload() {
     let created = repo.create(&event).await.unwrap();
     assert_eq!(created.data, data);
 
-    // Verify persistence via find_all
-    let events = repo.find_all(session_id).await.unwrap();
+    // Verify persistence via find_all (workspace-scoped)
+    let events = repo.find_all(ws_id, session_id).await.unwrap();
     let found = events.iter().find(|e| e.id == created.id).unwrap();
     assert_eq!(found.data, data);
 
     // Cleanup
     common::cleanup_org(&pool, &org_id).await;
+}
+
+#[tokio::test]
+async fn event_rls_isolates_across_workspaces() {
+    let state = common::test_state().await;
+    let pool = state.pool.clone();
+    let org_a = common::unique_org_id();
+    let org_b = common::unique_org_id();
+    let ws_a = create_workspace(&pool, &org_a).await;
+    let ws_b = create_workspace(&pool, &org_b).await;
+    let agent_a = create_agent(&pool, ws_a).await;
+    let session_a = create_session(&pool, ws_a, agent_a).await;
+    let repo = &state.event_repo;
+
+    // Create event in workspace A
+    let event = Event::lifecycle(session_a, ws_a, "session_started", "Started in ws_a");
+    let created = repo.create(&event).await.unwrap();
+
+    // Events for ws_a/session_a should include it
+    let events_a = repo.find_all(ws_a, session_a).await.unwrap();
+    assert!(
+        events_a.iter().any(|e| e.id == created.id),
+        "Event should be visible in its own workspace"
+    );
+
+    // Querying with ws_b context should NOT return ws_a's events (RLS isolation)
+    let events_wrong_ws = repo.find_all(ws_b, session_a).await.unwrap();
+    assert!(
+        !events_wrong_ws.iter().any(|e| e.id == created.id),
+        "Event from ws_a should not be visible under ws_b RLS context"
+    );
+
+    common::cleanup_org(&pool, &org_a).await;
+    common::cleanup_org(&pool, &org_b).await;
 }

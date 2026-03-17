@@ -167,6 +167,35 @@ async fn gate_definition_find_by_id_nonexistent_returns_none() {
 }
 
 #[tokio::test]
+async fn gate_definition_filter_by_disabled() {
+    let state = common::test_state().await;
+    let pool = state.pool.clone();
+    let org_id = common::unique_org_id();
+    let ws_id = create_workspace(&pool, &org_id).await;
+    let repo = &state.gate_definition_repo;
+
+    // Create an enabled gate definition
+    let g1 = make_gate_definition(ws_id);
+    repo.create(&g1).await.unwrap();
+
+    // Create a disabled gate definition
+    let mut g2 = make_gate_definition(ws_id);
+    g2.id = Uuid::now_v7();
+    g2.name = "Disabled Gate".into();
+    g2.enabled = false;
+    repo.create(&g2).await.unwrap();
+
+    // find_disabled should return only g2
+    let disabled = repo.find_disabled(ws_id).await.unwrap();
+    assert_eq!(disabled.len(), 1);
+    assert_eq!(disabled[0].name, "Disabled Gate");
+    assert!(!disabled[0].enabled);
+
+    // Cleanup
+    common::cleanup_org(&pool, &org_id).await;
+}
+
+#[tokio::test]
 async fn gate_definition_delete_nonexistent_returns_not_found() {
     let state = common::test_state().await;
     let pool = state.pool.clone();
