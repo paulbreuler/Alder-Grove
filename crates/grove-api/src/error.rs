@@ -1,4 +1,4 @@
-use axum::extract::rejection::{JsonRejection, PathRejection};
+use axum::extract::rejection::{JsonRejection, PathRejection, QueryRejection};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use grove_domain::error::DomainError;
@@ -32,6 +32,9 @@ pub enum ApiError {
 
     #[error("{0}")]
     PathParam(#[from] PathRejection),
+
+    #[error("{0}")]
+    QueryParam(#[from] QueryRejection),
 }
 
 impl ApiError {
@@ -69,6 +72,7 @@ impl IntoResponse for ApiError {
             Self::Forbidden => (StatusCode::FORBIDDEN, "forbidden".into()),
             Self::JsonPayload(rejection) => (rejection.status(), rejection.body_text()),
             Self::PathParam(rejection) => (rejection.status(), rejection.body_text()),
+            Self::QueryParam(rejection) => (rejection.status(), rejection.body_text()),
         };
 
         ProblemDetails::from_status_code(status)

@@ -6,6 +6,7 @@ use uuid::Uuid;
 
 use crate::error::ApiError;
 use crate::extract::{Json, Path};
+use crate::routes::helpers::resolve_workspace;
 use crate::state::AppState;
 
 #[derive(Serialize)]
@@ -65,22 +66,9 @@ pub struct UpdateAgentRequest {
     pub provider: String,
     pub model: Option<String>,
     pub description: Option<String>,
-    #[serde(default)]
     pub capabilities: Vec<String>,
-    #[serde(default = "default_config")]
     pub config: serde_json::Value,
-    #[serde(default = "default_active")]
     pub status: AgentStatus,
-}
-
-/// Verify workspace exists and belongs to the org. Returns workspace_id.
-async fn resolve_workspace(state: &AppState, org_id: &str, ws_id: Uuid) -> Result<Uuid, ApiError> {
-    state
-        .workspace_repo
-        .find_by_id(org_id, ws_id)
-        .await?
-        .ok_or_else(|| ApiError::NotFound(format!("workspace {ws_id} not found")))?;
-    Ok(ws_id)
 }
 
 /// GET /orgs/{org_id}/workspaces/{ws_id}/agents
@@ -88,7 +76,7 @@ pub async fn list(
     State(state): State<AppState>,
     Path((org_id, ws_id)): Path<(String, Uuid)>,
 ) -> Result<axum::Json<Vec<AgentResponse>>, ApiError> {
-    let ws_id = resolve_workspace(&state, &org_id, ws_id).await?;
+    resolve_workspace(&*state.workspace_repo, &org_id, ws_id).await?;
     let agents = state.agent_repo.find_all(ws_id).await?;
     Ok(axum::Json(
         agents.into_iter().map(AgentResponse::from).collect(),
@@ -100,7 +88,7 @@ pub async fn get(
     State(state): State<AppState>,
     Path((org_id, ws_id, agent_id)): Path<(String, Uuid, Uuid)>,
 ) -> Result<axum::Json<AgentResponse>, ApiError> {
-    let ws_id = resolve_workspace(&state, &org_id, ws_id).await?;
+    resolve_workspace(&*state.workspace_repo, &org_id, ws_id).await?;
     let agent = state
         .agent_repo
         .find_by_id(ws_id, agent_id)
@@ -115,7 +103,7 @@ pub async fn create(
     Path((org_id, ws_id)): Path<(String, Uuid)>,
     Json(body): Json<CreateAgentRequest>,
 ) -> Result<(StatusCode, axum::Json<AgentResponse>), ApiError> {
-    let ws_id = resolve_workspace(&state, &org_id, ws_id).await?;
+    resolve_workspace(&*state.workspace_repo, &org_id, ws_id).await?;
 
     if body.name.trim().is_empty() {
         return Err(ApiError::BadRequest("name cannot be empty".into()));
@@ -151,7 +139,7 @@ pub async fn update(
     Path((org_id, ws_id, agent_id)): Path<(String, Uuid, Uuid)>,
     Json(body): Json<UpdateAgentRequest>,
 ) -> Result<axum::Json<AgentResponse>, ApiError> {
-    let ws_id = resolve_workspace(&state, &org_id, ws_id).await?;
+    resolve_workspace(&*state.workspace_repo, &org_id, ws_id).await?;
 
     if body.name.trim().is_empty() {
         return Err(ApiError::BadRequest("name cannot be empty".into()));
@@ -186,7 +174,7 @@ pub async fn delete(
     State(state): State<AppState>,
     Path((org_id, ws_id, agent_id)): Path<(String, Uuid, Uuid)>,
 ) -> Result<StatusCode, ApiError> {
-    let ws_id = resolve_workspace(&state, &org_id, ws_id).await?;
+    resolve_workspace(&*state.workspace_repo, &org_id, ws_id).await?;
     state.agent_repo.delete(ws_id, agent_id).await?;
     Ok(StatusCode::NO_CONTENT)
 }

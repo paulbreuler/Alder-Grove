@@ -117,6 +117,10 @@ async fn agent_route_crud_lifecycle() {
                 .body(json_body(serde_json::json!({
                     "name": "Updated Agent",
                     "provider": "anthropic",
+                    "model": "claude-opus-4-20250514",
+                    "description": "Updated agent description",
+                    "capabilities": ["code_generation"],
+                    "config": {"max_tokens": 4096},
                     "status": "disabled"
                 })))
                 .unwrap(),

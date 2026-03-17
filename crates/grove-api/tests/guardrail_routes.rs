@@ -127,9 +127,13 @@ async fn guardrail_route_crud_lifecycle() {
                 .header("content-type", "application/json")
                 .body(json_body(serde_json::json!({
                     "name": "Updated guardrail",
+                    "description": "Updated description",
                     "category": "prohibition",
+                    "scope": "workspace",
                     "enforcement": "advisory",
                     "rule": prohibition_rule(),
+                    "version": 1,
+                    "sort_order": 0,
                     "enabled": false
                 })))
                 .unwrap(),

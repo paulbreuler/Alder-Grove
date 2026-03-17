@@ -40,15 +40,22 @@ struct AgentRow {
     updated_at: DateTime<Utc>,
 }
 
-impl From<AgentRow> for Agent {
-    fn from(row: AgentRow) -> Self {
+impl TryFrom<AgentRow> for Agent {
+    type Error = DomainError;
+
+    fn try_from(row: AgentRow) -> Result<Self, Self::Error> {
         let status = match row.status.as_str() {
+            "active" => AgentStatus::Active,
             "disabled" => AgentStatus::Disabled,
-            _ => AgentStatus::Active,
+            other => {
+                return Err(DomainError::Internal(format!(
+                    "invalid agent status: {other}"
+                )));
+            }
         };
-        let capabilities: Vec<String> =
-            serde_json::from_value(row.capabilities).unwrap_or_default();
-        Self {
+        let capabilities: Vec<String> = serde_json::from_value(row.capabilities)
+            .map_err(|e| DomainError::Internal(format!("invalid agent capabilities JSON: {e}")))?;
+        Ok(Self {
             id: row.id,
             workspace_id: row.workspace_id,
             name: row.name,
@@ -60,7 +67,7 @@ impl From<AgentRow> for Agent {
             status,
             created_at: row.created_at,
             updated_at: row.updated_at,
-        }
+        })
     }
 }
 
@@ -89,7 +96,7 @@ impl CrudRepository<Agent> for PgAgentRepo {
             .await
             .map_err(|e| DomainError::Internal(e.to_string()))?;
 
-        Ok(rows.into_iter().map(Agent::from).collect())
+        rows.into_iter().map(Agent::try_from).collect()
     }
 
     async fn find_by_id(&self, workspace_id: Uuid, id: Uuid) -> Result<Option<Agent>, DomainError> {
@@ -109,7 +116,7 @@ impl CrudRepository<Agent> for PgAgentRepo {
             .await
             .map_err(|e| DomainError::Internal(e.to_string()))?;
 
-        Ok(row.map(Agent::from))
+        row.map(Agent::try_from).transpose()
     }
 
     async fn create(&self, agent: &Agent) -> Result<Agent, DomainError> {
@@ -142,7 +149,7 @@ impl CrudRepository<Agent> for PgAgentRepo {
             .await
             .map_err(|e| DomainError::Internal(e.to_string()))?;
 
-        Ok(Agent::from(row))
+        Agent::try_from(row)
     }
 
     async fn update(&self, agent: &Agent) -> Result<Agent, DomainError> {
@@ -179,7 +186,7 @@ impl CrudRepository<Agent> for PgAgentRepo {
             .await
             .map_err(|e| DomainError::Internal(e.to_string()))?;
 
-        Ok(Agent::from(row))
+        Agent::try_from(row)
     }
 
     async fn delete(&self, workspace_id: Uuid, id: Uuid) -> Result<(), DomainError> {

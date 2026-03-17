@@ -1,4 +1,4 @@
-use axum::extract::{Query, State};
+use axum::extract::State;
 use axum::http::StatusCode;
 use grove_domain::guardrail::{
     Guardrail, GuardrailCategory, GuardrailEnforcement, GuardrailRule, GuardrailScope,
@@ -7,7 +7,8 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::error::ApiError;
-use crate::extract::{Json, Path};
+use crate::extract::{Json, Path, Query};
+use crate::routes::helpers::resolve_workspace;
 use crate::state::AppState;
 
 #[derive(Serialize)]
@@ -79,16 +80,11 @@ pub struct UpdateGuardrailRequest {
     pub name: String,
     pub description: Option<String>,
     pub category: GuardrailCategory,
-    #[serde(default = "default_scope")]
     pub scope: GuardrailScope,
-    #[serde(default = "default_enforcement")]
     pub enforcement: GuardrailEnforcement,
     pub rule: GuardrailRule,
-    #[serde(default = "default_version")]
     pub version: i32,
-    #[serde(default)]
     pub sort_order: i32,
-    #[serde(default = "default_enabled")]
     pub enabled: bool,
 }
 
@@ -98,49 +94,21 @@ pub struct ListGuardrailsQuery {
     pub enabled: Option<bool>,
 }
 
-/// Verify workspace exists and belongs to the org. Returns workspace_id.
-async fn resolve_workspace(state: &AppState, org_id: &str, ws_id: Uuid) -> Result<Uuid, ApiError> {
-    state
-        .workspace_repo
-        .find_by_id(org_id, ws_id)
-        .await?
-        .ok_or_else(|| ApiError::NotFound(format!("workspace {ws_id} not found")))?;
-    Ok(ws_id)
-}
-
 /// GET /orgs/{org_id}/workspaces/{ws_id}/guardrails
 ///
 /// Supports optional query params: `?scope=workspace&enabled=true`
-/// When both scope and enabled=true are provided, uses optimized find_enabled_by_scope.
+/// Filters are pushed into SQL via `find_filtered`.
 pub async fn list(
     State(state): State<AppState>,
     Path((org_id, ws_id)): Path<(String, Uuid)>,
     Query(query): Query<ListGuardrailsQuery>,
 ) -> Result<axum::Json<Vec<GuardrailResponse>>, ApiError> {
-    let ws_id = resolve_workspace(&state, &org_id, ws_id).await?;
+    resolve_workspace(&*state.workspace_repo, &org_id, ws_id).await?;
 
-    let guardrails = match (query.scope, query.enabled) {
-        // Optimized path: enabled + scope filter uses dedicated index
-        (Some(scope), Some(true)) => {
-            state
-                .guardrail_repo
-                .find_enabled_by_scope(ws_id, scope)
-                .await?
-        }
-        _ => {
-            let mut all = state.guardrail_repo.find_all(ws_id).await?;
-
-            // Apply client-side filters for non-optimized combinations
-            if let Some(scope) = query.scope {
-                all.retain(|g| g.scope == scope);
-            }
-            if let Some(enabled) = query.enabled {
-                all.retain(|g| g.enabled == enabled);
-            }
-
-            all
-        }
-    };
+    let guardrails = state
+        .guardrail_repo
+        .find_filtered(ws_id, query.scope, query.enabled)
+        .await?;
 
     Ok(axum::Json(
         guardrails
@@ -155,7 +123,7 @@ pub async fn get(
     State(state): State<AppState>,
     Path((org_id, ws_id, guardrail_id)): Path<(String, Uuid, Uuid)>,
 ) -> Result<axum::Json<GuardrailResponse>, ApiError> {
-    let ws_id = resolve_workspace(&state, &org_id, ws_id).await?;
+    resolve_workspace(&*state.workspace_repo, &org_id, ws_id).await?;
     let guardrail = state
         .guardrail_repo
         .find_by_id(ws_id, guardrail_id)
@@ -170,7 +138,7 @@ pub async fn create(
     Path((org_id, ws_id)): Path<(String, Uuid)>,
     Json(body): Json<CreateGuardrailRequest>,
 ) -> Result<(StatusCode, axum::Json<GuardrailResponse>), ApiError> {
-    let ws_id = resolve_workspace(&state, &org_id, ws_id).await?;
+    resolve_workspace(&*state.workspace_repo, &org_id, ws_id).await?;
 
     if body.name.trim().is_empty() {
         return Err(ApiError::BadRequest("name cannot be empty".into()));
@@ -205,7 +173,7 @@ pub async fn update(
     Path((org_id, ws_id, guardrail_id)): Path<(String, Uuid, Uuid)>,
     Json(body): Json<UpdateGuardrailRequest>,
 ) -> Result<axum::Json<GuardrailResponse>, ApiError> {
-    let ws_id = resolve_workspace(&state, &org_id, ws_id).await?;
+    resolve_workspace(&*state.workspace_repo, &org_id, ws_id).await?;
 
     if body.name.trim().is_empty() {
         return Err(ApiError::BadRequest("name cannot be empty".into()));
@@ -239,7 +207,7 @@ pub async fn delete(
     State(state): State<AppState>,
     Path((org_id, ws_id, guardrail_id)): Path<(String, Uuid, Uuid)>,
 ) -> Result<StatusCode, ApiError> {
-    let ws_id = resolve_workspace(&state, &org_id, ws_id).await?;
+    resolve_workspace(&*state.workspace_repo, &org_id, ws_id).await?;
     state.guardrail_repo.delete(ws_id, guardrail_id).await?;
     Ok(StatusCode::NO_CONTENT)
 }

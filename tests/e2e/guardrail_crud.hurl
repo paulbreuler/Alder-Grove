@@ -92,6 +92,7 @@ PUT http://localhost:3001/orgs/e2e_guardrail_org/workspaces/{{ws_id}}/guardrails
 Content-Type: application/json
 {
     "name": "Updated guardrail",
+    "description": "Updated description",
     "category": "prohibition",
     "scope": "workspace",
     "enforcement": "advisory",
@@ -101,6 +102,8 @@ Content-Type: application/json
         "patterns": ["migrations/"],
         "actions": ["file_modify"]
     },
+    "version": 1,
+    "sort_order": 0,
     "enabled": false
 }
 HTTP 200

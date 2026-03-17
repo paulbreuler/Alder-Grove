@@ -44,26 +44,35 @@ struct GuardrailRow {
     updated_at: DateTime<Utc>,
 }
 
-fn parse_category(s: &str) -> GuardrailCategory {
+fn parse_category(s: &str) -> Result<GuardrailCategory, DomainError> {
     match s {
-        "requirement" => GuardrailCategory::Requirement,
-        "boundary" => GuardrailCategory::Boundary,
-        "preference" => GuardrailCategory::Preference,
-        _ => GuardrailCategory::Prohibition,
+        "prohibition" => Ok(GuardrailCategory::Prohibition),
+        "requirement" => Ok(GuardrailCategory::Requirement),
+        "boundary" => Ok(GuardrailCategory::Boundary),
+        "preference" => Ok(GuardrailCategory::Preference),
+        other => Err(DomainError::Internal(format!(
+            "invalid guardrail category: {other}"
+        ))),
     }
 }
 
-fn parse_scope(s: &str) -> GuardrailScope {
+fn parse_scope(s: &str) -> Result<GuardrailScope, DomainError> {
     match s {
-        "session" => GuardrailScope::Session,
-        _ => GuardrailScope::Workspace,
+        "workspace" => Ok(GuardrailScope::Workspace),
+        "session" => Ok(GuardrailScope::Session),
+        other => Err(DomainError::Internal(format!(
+            "invalid guardrail scope: {other}"
+        ))),
     }
 }
 
-fn parse_enforcement(s: &str) -> GuardrailEnforcement {
+fn parse_enforcement(s: &str) -> Result<GuardrailEnforcement, DomainError> {
     match s {
-        "advisory" => GuardrailEnforcement::Advisory,
-        _ => GuardrailEnforcement::Enforced,
+        "enforced" => Ok(GuardrailEnforcement::Enforced),
+        "advisory" => Ok(GuardrailEnforcement::Advisory),
+        other => Err(DomainError::Internal(format!(
+            "invalid guardrail enforcement: {other}"
+        ))),
     }
 }
 
@@ -90,29 +99,27 @@ fn enforcement_to_str(e: &GuardrailEnforcement) -> &'static str {
     }
 }
 
-impl From<GuardrailRow> for Guardrail {
-    fn from(row: GuardrailRow) -> Self {
-        let rule: GuardrailRule =
-            serde_json::from_value(row.rule).unwrap_or(GuardrailRule::Prohibition {
-                description: "invalid rule".into(),
-                patterns: vec![],
-                actions: vec![],
-            });
-        Self {
+impl TryFrom<GuardrailRow> for Guardrail {
+    type Error = DomainError;
+
+    fn try_from(row: GuardrailRow) -> Result<Self, Self::Error> {
+        let rule: GuardrailRule = serde_json::from_value(row.rule)
+            .map_err(|e| DomainError::Internal(format!("invalid guardrail rule JSON: {e}")))?;
+        Ok(Self {
             id: row.id,
             workspace_id: row.workspace_id,
             name: row.name,
             description: row.description,
-            category: parse_category(&row.category),
-            scope: parse_scope(&row.scope),
-            enforcement: parse_enforcement(&row.enforcement),
+            category: parse_category(&row.category)?,
+            scope: parse_scope(&row.scope)?,
+            enforcement: parse_enforcement(&row.enforcement)?,
             rule,
             version: row.version,
             sort_order: row.sort_order,
             enabled: row.enabled,
             created_at: row.created_at,
             updated_at: row.updated_at,
-        }
+        })
     }
 }
 
@@ -135,7 +142,7 @@ impl CrudRepository<Guardrail> for PgGuardrailRepo {
             .await
             .map_err(|e| DomainError::Internal(e.to_string()))?;
 
-        Ok(rows.into_iter().map(Guardrail::from).collect())
+        rows.into_iter().map(Guardrail::try_from).collect()
     }
 
     async fn find_by_id(
@@ -158,7 +165,7 @@ impl CrudRepository<Guardrail> for PgGuardrailRepo {
             .await
             .map_err(|e| DomainError::Internal(e.to_string()))?;
 
-        Ok(row.map(Guardrail::from))
+        row.map(Guardrail::try_from).transpose()
     }
 
     async fn create(&self, guardrail: &Guardrail) -> Result<Guardrail, DomainError> {
@@ -194,7 +201,7 @@ impl CrudRepository<Guardrail> for PgGuardrailRepo {
             .await
             .map_err(|e| DomainError::Internal(e.to_string()))?;
 
-        Ok(Guardrail::from(row))
+        Guardrail::try_from(row)
     }
 
     async fn update(&self, guardrail: &Guardrail) -> Result<Guardrail, DomainError> {
@@ -234,7 +241,7 @@ impl CrudRepository<Guardrail> for PgGuardrailRepo {
             .await
             .map_err(|e| DomainError::Internal(e.to_string()))?;
 
-        Ok(Guardrail::from(row))
+        Guardrail::try_from(row)
     }
 
     async fn delete(&self, workspace_id: Uuid, id: Uuid) -> Result<(), DomainError> {
@@ -287,6 +294,59 @@ impl GuardrailRepository for PgGuardrailRepo {
             .await
             .map_err(|e| DomainError::Internal(e.to_string()))?;
 
-        Ok(rows.into_iter().map(Guardrail::from).collect())
+        rows.into_iter().map(Guardrail::try_from).collect()
+    }
+
+    async fn find_filtered(
+        &self,
+        workspace_id: Uuid,
+        scope: Option<GuardrailScope>,
+        enabled: Option<bool>,
+    ) -> Result<Vec<Guardrail>, DomainError> {
+        let mut tx = TenantTx::begin(&self.pool, workspace_id)
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))?;
+
+        // Build WHERE clause dynamically based on provided filters.
+        let mut conditions = Vec::new();
+        let mut bind_idx: u32 = 1;
+
+        if scope.is_some() {
+            conditions.push(format!("scope = ${bind_idx}"));
+            bind_idx += 1;
+        }
+        if enabled.is_some() {
+            conditions.push(format!("enabled = ${bind_idx}"));
+            // bind_idx not incremented — last possible filter
+        }
+
+        let where_clause = if conditions.is_empty() {
+            String::new()
+        } else {
+            format!(" WHERE {}", conditions.join(" AND "))
+        };
+
+        let query_str = format!(
+            "SELECT {SELECT_COLS} FROM guardrails{where_clause} ORDER BY sort_order, created_at"
+        );
+        let mut query = sqlx::query_as::<_, GuardrailRow>(&query_str);
+
+        if let Some(scope) = scope {
+            query = query.bind(scope_to_str(&scope));
+        }
+        if let Some(enabled) = enabled {
+            query = query.bind(enabled);
+        }
+
+        let rows = query
+            .fetch_all(tx.conn())
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))?;
+
+        tx.commit()
+            .await
+            .map_err(|e| DomainError::Internal(e.to_string()))?;
+
+        rows.into_iter().map(Guardrail::try_from).collect()
     }
 }

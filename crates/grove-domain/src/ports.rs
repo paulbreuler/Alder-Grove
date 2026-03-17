@@ -84,13 +84,21 @@ pub trait EventRepository: Send + Sync {
     async fn create(&self, event: &Event) -> Result<Event, DomainError>;
 }
 
-/// Guardrail repository — workspace-scoped CRUD + enabled-by-scope filtering.
+/// Guardrail repository — workspace-scoped CRUD + filtered queries.
 #[async_trait::async_trait]
 pub trait GuardrailRepository: CrudRepository<Guardrail> {
     async fn find_enabled_by_scope(
         &self,
         workspace_id: Uuid,
         scope: GuardrailScope,
+    ) -> Result<Vec<Guardrail>, DomainError>;
+
+    /// Find guardrails with optional scope and enabled filters pushed into SQL.
+    async fn find_filtered(
+        &self,
+        workspace_id: Uuid,
+        scope: Option<GuardrailScope>,
+        enabled: Option<bool>,
     ) -> Result<Vec<Guardrail>, DomainError>;
 }
 
