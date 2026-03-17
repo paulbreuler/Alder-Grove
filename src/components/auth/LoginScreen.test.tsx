@@ -4,11 +4,12 @@ import { LoginScreen } from './LoginScreen';
 import { useAuthStore } from '@/stores/useAuthStore';
 
 vi.mock('@clerk/react', () => ({
-  useSignIn: () => ({
-    signIn: {
-      sso: vi.fn().mockResolvedValue({ error: null }),
+  useClerk: () => ({
+    client: {
+      signIn: {
+        create: vi.fn().mockResolvedValue({}),
+      },
     },
-    fetchStatus: 'idle',
   }),
 }));
 

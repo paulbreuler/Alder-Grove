@@ -8,7 +8,7 @@ let mockIsLoaded = true;
 
 vi.mock('@clerk/react', () => ({
   useAuth: () => ({ isSignedIn: mockIsSignedIn, isLoaded: mockIsLoaded }),
-  useSignIn: () => ({ signIn: null, fetchStatus: 'idle' }),
+  useClerk: () => ({ client: { signIn: { create: vi.fn() } }, session: null }),
   useSession: () => ({ session: null }),
   ClerkProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));

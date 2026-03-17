@@ -1,4 +1,4 @@
-import { useSignIn } from '@clerk/react';
+import { useClerk } from '@clerk/react';
 import { invoke } from '@tauri-apps/api/core';
 import { Apple, Github } from 'lucide-react';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -16,43 +16,46 @@ const OAUTH_PROVIDERS: ReadonlyArray<{
 ];
 
 export function LoginScreen(): React.JSX.Element {
-  const { signIn, fetchStatus } = useSignIn();
+  const clerk = useClerk();
   const status = useAuthStore((s) => s.status);
   const error = useAuthStore((s) => s.error);
   const setStatus = useAuthStore((s) => s.setStatus);
   const setError = useAuthStore((s) => s.setError);
   const clearError = useAuthStore((s) => s.clearError);
 
-  const isLoading = status === 'authenticating' || fetchStatus === 'fetching';
+  const isLoading = status === 'authenticating';
 
   async function handleOAuth(strategy: OAuthStrategy): Promise<void> {
-    if (!signIn) return;
+    if (!clerk.client) return;
     setStatus('authenticating');
     try {
-      // Clerk v6 sso() initiates the OAuth redirect. In a Tauri webview,
-      // the redirect will navigate to the provider's auth page.
-      // The allowedRedirectProtocols on ClerkProvider permits grove:// callbacks.
-      const result = await signIn.sso({
+      // Use the Clerk client directly to create a sign-in attempt.
+      // This returns the raw SignInResource with firstFactorVerification
+      // containing the external OAuth redirect URL.
+      const signIn = await clerk.client.signIn.create({
         strategy,
         redirectUrl: 'grove://callback',
-        redirectCallbackUrl: 'grove://callback',
+        actionCompleteRedirectUrl: 'grove://callback',
       });
-      if (result.error) {
-        setError(result.error.message ?? 'OAuth initiation failed');
+
+      // Extract the OAuth provider URL from the verification object.
+      // Clerk's SignInResource has firstFactorVerification behind a proxy —
+      // cast through unknown to access it.
+      const verification = (signIn as unknown as {
+        firstFactorVerification?: {
+          externalVerificationRedirectURL?: { toString(): string } | null;
+        };
+      }).firstFactorVerification;
+
+      const url = verification?.externalVerificationRedirectURL?.toString();
+
+      if (url) {
+        await invoke('open_auth_url', { url });
+      } else {
+        setError('No redirect URL returned from Clerk. Check OAuth provider configuration.');
       }
     } catch (err) {
-      // If Clerk tries to navigate and we need to open the system browser instead,
-      // catch the navigation attempt and use Tauri's open command
-      const errStr = String(err);
-      if (errStr.includes('http')) {
-        try {
-          await invoke('open_auth_url', { url: errStr });
-        } catch (invokeErr) {
-          setError(`Failed to open browser: ${String(invokeErr)}`);
-        }
-      } else {
-        setError(errStr);
-      }
+      setError(String(err));
     }
   }
 
@@ -106,7 +109,7 @@ export function LoginScreen(): React.JSX.Element {
             }}
           >
             {Icon && <Icon size={18} />}
-            {isLoading ? 'Waiting for browser...' : `Sign in with ${label}`}
+            {isLoading ? 'Waiting for browser…' : `Sign in with ${label}`}
           </button>
         ))}
       </div>
