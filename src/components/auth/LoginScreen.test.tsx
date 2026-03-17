@@ -6,9 +6,9 @@ import { useAuthStore } from '@/stores/useAuthStore';
 vi.mock('@clerk/react', () => ({
   useSignIn: () => ({
     signIn: {
-      authenticateWithRedirect: vi.fn(),
+      sso: vi.fn().mockResolvedValue({ error: null }),
     },
-    isLoaded: true,
+    fetchStatus: 'idle',
   }),
 }));
 

@@ -3,39 +3,56 @@ import { invoke } from '@tauri-apps/api/core';
 import { Apple, Github } from 'lucide-react';
 import { useAuthStore } from '@/stores/useAuthStore';
 
-const OAUTH_PROVIDERS = [
-  { strategy: 'oauth_apple' as const, label: 'Apple', Icon: Apple },
-  { strategy: 'oauth_github' as const, label: 'GitHub', Icon: Github },
-  { strategy: 'oauth_google' as const, label: 'Google', Icon: null },
-] as const;
+type OAuthStrategy = 'oauth_apple' | 'oauth_github' | 'oauth_google';
+
+const OAUTH_PROVIDERS: ReadonlyArray<{
+  strategy: OAuthStrategy;
+  label: string;
+  Icon: typeof Apple | null;
+}> = [
+  { strategy: 'oauth_apple', label: 'Apple', Icon: Apple },
+  { strategy: 'oauth_github', label: 'GitHub', Icon: Github },
+  { strategy: 'oauth_google', label: 'Google', Icon: null },
+];
 
 export function LoginScreen(): React.JSX.Element {
-  const { signIn, isLoaded } = useSignIn();
+  const { signIn, fetchStatus } = useSignIn();
   const status = useAuthStore((s) => s.status);
   const error = useAuthStore((s) => s.error);
   const setStatus = useAuthStore((s) => s.setStatus);
   const setError = useAuthStore((s) => s.setError);
   const clearError = useAuthStore((s) => s.clearError);
 
-  const isLoading = status === 'authenticating';
+  const isLoading = status === 'authenticating' || fetchStatus === 'fetching';
 
-  async function handleOAuth(strategy: string): Promise<void> {
-    if (!signIn || !isLoaded) return;
+  async function handleOAuth(strategy: OAuthStrategy): Promise<void> {
+    if (!signIn) return;
     setStatus('authenticating');
     try {
-      const result = await signIn.authenticateWithRedirect({
-        strategy: strategy as 'oauth_apple',
+      // Clerk v6 sso() initiates the OAuth redirect. In a Tauri webview,
+      // the redirect will navigate to the provider's auth page.
+      // The allowedRedirectProtocols on ClerkProvider permits grove:// callbacks.
+      const result = await signIn.sso({
+        strategy,
         redirectUrl: 'grove://callback',
-        redirectUrlComplete: 'grove://callback',
+        redirectCallbackUrl: 'grove://callback',
       });
-      // Open the Clerk authorization URL in the system browser
-      if (result?.externalVerificationRedirectURL) {
-        await invoke('open_auth_url', {
-          url: result.externalVerificationRedirectURL.toString(),
-        });
+      if (result.error) {
+        setError(result.error.message ?? 'OAuth initiation failed');
       }
     } catch (err) {
-      setError(String(err));
+      // If Clerk tries to navigate and we need to open the system browser instead,
+      // catch the navigation attempt and use Tauri's open command
+      const errStr = String(err);
+      if (errStr.includes('http')) {
+        try {
+          await invoke('open_auth_url', { url: errStr });
+        } catch (invokeErr) {
+          setError(`Failed to open browser: ${String(invokeErr)}`);
+        }
+      } else {
+        setError(errStr);
+      }
     }
   }
 

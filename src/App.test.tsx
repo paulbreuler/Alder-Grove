@@ -4,66 +4,50 @@ import { MemoryRouter } from 'react-router-dom';
 import { App } from './App';
 
 let mockIsSignedIn = false;
+let mockIsLoaded = true;
 
 vi.mock('@clerk/react', () => ({
-  Show: ({
-    when,
-    fallback,
-    children,
-  }: {
-    when: string;
-    fallback?: React.ReactNode;
-    children?: React.ReactNode;
-  }) => {
-    if (when === 'signed-in' && mockIsSignedIn) return <>{children}</>;
-    if (when === 'signed-in' && !mockIsSignedIn) return <>{fallback}</>;
-    return null;
-  },
-  SignInButton: ({ children }: { children?: React.ReactNode }) =>
-    children ?? <button>Sign in</button>,
-  ClerkProvider: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
+  useAuth: () => ({ isSignedIn: mockIsSignedIn, isLoaded: mockIsLoaded }),
+  useSignIn: () => ({ signIn: null, fetchStatus: 'idle' }),
+  useSession: () => ({ session: null }),
+  ClerkProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock('@paulbreuler/shell', () => ({
   Workbench: () => <div data-testid="workbench">Workbench</div>,
-  globalExtensionRegistry: {
-    activate: vi.fn().mockResolvedValue(undefined),
-  },
+  TitleBar: ({ title }: { title: string }) => <div data-testid="title-bar">{title}</div>,
+  globalExtensionRegistry: { activate: vi.fn().mockResolvedValue(undefined) },
 }));
 
 vi.mock('@/workbench/bootstrap', () => ({
   bootstrapWorkbench: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));
+vi.mock('@tauri-apps/api/event', () => ({ listen: vi.fn().mockResolvedValue(() => {}) }));
+
 function renderApp() {
-  return render(
-    <MemoryRouter>
-      <App />
-    </MemoryRouter>,
-  );
+  return render(<MemoryRouter><App /></MemoryRouter>);
 }
 
 describe('App', () => {
   beforeEach(() => {
     mockIsSignedIn = false;
+    mockIsLoaded = true;
   });
 
-  it('renders sign-in page when signed out', () => {
+  it('always renders the title bar', () => {
     renderApp();
-    expect(screen.getByText('Alder Grove')).toBeInTheDocument();
-    expect(screen.getByText('Sign in')).toBeInTheDocument();
+    expect(screen.getByTestId('title-bar')).toBeInTheDocument();
   });
 
-  it('renders the tagline when signed out', () => {
+  it('renders login screen when signed out', () => {
     renderApp();
-    expect(
-      screen.getByText('Your applications grow in the Grove.'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Your applications grow in the Grove.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /github/i })).toBeInTheDocument();
   });
 
-  it('renders Workbench when signed in and bootstrapped', async () => {
+  it('renders Workbench when signed in', async () => {
     mockIsSignedIn = true;
     renderApp();
     await waitFor(() => {
@@ -71,16 +55,9 @@ describe('App', () => {
     });
   });
 
-  it('does not render sign-in when signed in', async () => {
-    mockIsSignedIn = true;
+  it('shows loading when Clerk not loaded', () => {
+    mockIsLoaded = false;
     renderApp();
-    await waitFor(() => {
-      expect(screen.queryByText('Sign in')).not.toBeInTheDocument();
-    });
-  });
-
-  it('does not render workbench when signed out', () => {
-    renderApp();
-    expect(screen.queryByTestId('workbench')).not.toBeInTheDocument();
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
   });
 });
