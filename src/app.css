@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+/*
+ * Grove design tokens — all UI styling uses these custom properties.
+ * Populated by Alder Shell theme system; defaults here for standalone dev.
+ */
+:root {
+  --grove-bg-primary: #0f1117;
+  --grove-bg-secondary: #1a1d27;
+  --grove-bg-tertiary: #242836;
+  --grove-text-primary: #e4e4e7;
+  --grove-text-secondary: #a1a1aa;
+  --grove-text-muted: #71717a;
+  --grove-accent: #6366f1;
+  --grove-accent-hover: #818cf8;
+  --grove-border: #2e3240;
+  --grove-radius-sm: 4px;
+  --grove-radius-md: 8px;
+  --grove-radius-lg: 12px;
+  --grove-space-xs: 4px;
+  --grove-space-sm: 8px;
+  --grove-space-md: 16px;
+  --grove-space-lg: 24px;
+  --grove-space-xl: 32px;
+  --grove-font-sans: system-ui, -apple-system, sans-serif;
+  --grove-font-mono: ui-monospace, "Fira Code", monospace;
+  --grove-font-size-base: 1rem;
+  --grove-font-size-sm: 0.875rem;
+  --grove-font-size-lg: 1.125rem;
+  --grove-font-weight-normal: 400;
+  --grove-font-weight-semibold: 600;
+  --grove-font-weight-bold: 700;
+  --grove-border-width: 1px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: var(--grove-font-sans);
+  background: var(--grove-bg-primary);
+  color: var(--grove-text-primary);
+}
