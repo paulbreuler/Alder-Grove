@@ -66,16 +66,23 @@ describe('Generated types', () => {
       id: '00000000-0000-0000-0000-000000000000',
       workspace_id: '00000000-0000-0000-0000-000000000000',
       agent_id: '00000000-0000-0000-0000-000000000000',
+      title: 'Implement feature X',
       status: 'pending',
       intent: 'implement',
       target_type: null,
       target_id: null,
-      config: null,
+      context: {},
+      result: null,
+      initiated_by: 'user_test',
+      started_at: null,
+      completed_at: null,
       created_at: '2026-03-14T00:00:00Z',
       updated_at: '2026-03-14T00:00:00Z',
     };
     expect(s.status).toBe('pending');
     expect(s.intent).toBe('implement');
+    expect(s.title).toBe('Implement feature X');
+    expect(s.initiated_by).toBe('user_test');
   });
 
   it('GuardrailRule is a tagged union', () => {
