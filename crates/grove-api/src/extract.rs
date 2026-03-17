@@ -35,6 +35,31 @@ impl<T: serde::Serialize> axum::response::IntoResponse for Json<T> {
     }
 }
 
+/// A `Query` extractor that maps rejections to `ApiError`.
+///
+/// Drop-in replacement for `axum::extract::Query` — same usage, but
+/// deserialization failures produce `application/problem+json`.
+pub struct Query<T>(pub T);
+
+impl<T, S> axum::extract::FromRequestParts<S> for Query<T>
+where
+    T: DeserializeOwned + Send,
+    S: Send + Sync,
+{
+    type Rejection = ApiError;
+
+    async fn from_request_parts(
+        parts: &mut axum::http::request::Parts,
+        state: &S,
+    ) -> Result<Self, Self::Rejection> {
+        let result = axum::extract::Query::<T>::from_request_parts(parts, state).await;
+        match result {
+            Ok(axum::extract::Query(value)) => Ok(Query(value)),
+            Err(rejection) => Err(ApiError::QueryParam(rejection)),
+        }
+    }
+}
+
 /// A `Path` extractor that maps rejections to `ApiError`.
 pub struct Path<T>(pub T);
 

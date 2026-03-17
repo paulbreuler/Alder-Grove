@@ -5,6 +5,8 @@
 use std::sync::Arc;
 
 use grove_api::config::AppConfig;
+use grove_api::db::agent_repo::PgAgentRepo;
+use grove_api::db::guardrail_repo::PgGuardrailRepo;
 use grove_api::db::pool::create_pool;
 use grove_api::db::workspace_repo::PgWorkspaceRepo;
 use grove_api::state::AppState;
@@ -20,6 +22,8 @@ pub async fn test_state() -> AppState {
 
     AppState {
         workspace_repo: Arc::new(PgWorkspaceRepo::new(pool.clone())),
+        agent_repo: Arc::new(PgAgentRepo::new(pool.clone())),
+        guardrail_repo: Arc::new(PgGuardrailRepo::new(pool.clone())),
         pool,
         config,
     }
