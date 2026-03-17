@@ -2,15 +2,16 @@
   "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/tauri-v2.10.3/crates/tauri-utils/schema.json",
   "productName": "Alder Grove",
   "version": "0.1.0",
-  "bundle": {
-    "identifier": "com.aldergrove.app"
-  },
+  "identifier": "com.aldergrove.app",
   "build": {
+    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "pnpm build",
     "frontendDist": "../../dist",
     "devUrl": "http://localhost:5173"
   },
   "app": {
     "withGlobalTauri": true,
+    "macOSPrivateApi": true,
     "windows": [
       {
         "title": "Alder Grove",
@@ -21,5 +22,12 @@
         "center": true
       }
     ]
+  },
+  "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": ["grove"]
+      }
+    }
   }
 }
