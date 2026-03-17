@@ -29,30 +29,34 @@ export function LoginScreen(): React.JSX.Element {
     if (!clerk.client) return;
     setStatus('authenticating');
     try {
-      // Use the Clerk client directly to create a sign-in attempt.
-      // This returns the raw SignInResource with firstFactorVerification
-      // containing the external OAuth redirect URL.
+      // Get the localhost callback URL from Rust (port 19287, not 5173)
+      const callbackUrl = await invoke<string>('get_oauth_callback_url');
+
+      // Create the OAuth sign-in attempt with Clerk.
+      // The redirect URL points to our local callback server, which Clerk
+      // accepts (http scheme). Clerk returns the provider's auth URL in
+      // firstFactorVerification.externalVerificationRedirectURL.
       const signIn = await clerk.client.signIn.create({
         strategy,
-        redirectUrl: 'grove://callback',
-        actionCompleteRedirectUrl: 'grove://callback',
+        redirectUrl: callbackUrl,
+        actionCompleteRedirectUrl: callbackUrl,
       });
 
-      // Extract the OAuth provider URL from the verification object.
-      // Clerk's SignInResource has firstFactorVerification behind a proxy —
-      // cast through unknown to access it.
       const verification = (signIn as unknown as {
         firstFactorVerification?: {
           externalVerificationRedirectURL?: { toString(): string } | null;
         };
       }).firstFactorVerification;
 
-      const url = verification?.externalVerificationRedirectURL?.toString();
+      const authUrl = verification?.externalVerificationRedirectURL?.toString();
 
-      if (url) {
-        await invoke('open_auth_url', { url });
+      if (authUrl) {
+        // Start the one-shot HTTP callback server and open the browser.
+        // Rust will: bind port 19287 → open browser → wait for redirect →
+        // emit "auth-callback" to frontend with the callback URL params.
+        await invoke('start_oauth_flow', { authUrl });
       } else {
-        setError('No redirect URL returned from Clerk. Check OAuth provider configuration.');
+        setError('No redirect URL returned from Clerk');
       }
     } catch (err) {
       setError(String(err));

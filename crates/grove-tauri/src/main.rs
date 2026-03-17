@@ -26,7 +26,8 @@ fn main() {
             auth::set_clerk_token,
             auth::get_stored_clerk_token,
             auth::clear_clerk_token,
-            auth::open_auth_url,
+            auth::get_oauth_callback_url,
+            auth::start_oauth_flow,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Alder Grove");

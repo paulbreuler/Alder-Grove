@@ -4,18 +4,18 @@ import { MemoryRouter } from 'react-router-dom';
 import { App } from './App';
 
 let mockIsSignedIn = false;
-let mockIsLoaded = true;
 
 vi.mock('@clerk/react', () => ({
-  useAuth: () => ({ isSignedIn: mockIsSignedIn, isLoaded: mockIsLoaded }),
-  useClerk: () => ({ client: { signIn: { create: vi.fn() } }, session: null }),
+  useAuth: () => ({ isSignedIn: mockIsSignedIn, isLoaded: true }),
+  useClerk: () => ({ client: { signIn: { create: vi.fn() } }, session: null, handleRedirectCallback: vi.fn() }),
+  useUser: () => ({ user: null }),
   useSession: () => ({ session: null }),
+  UserButton: () => <div data-testid="user-button" />,
   ClerkProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock('@paulbreuler/shell', () => ({
   Workbench: () => <div data-testid="workbench">Workbench</div>,
-  TitleBar: ({ title }: { title: string }) => <div data-testid="title-bar">{title}</div>,
   globalExtensionRegistry: { activate: vi.fn().mockResolvedValue(undefined) },
 }));
 
@@ -33,31 +33,20 @@ function renderApp() {
 describe('App', () => {
   beforeEach(() => {
     mockIsSignedIn = false;
-    mockIsLoaded = true;
   });
 
-  it('always renders the title bar', () => {
-    renderApp();
-    expect(screen.getByTestId('title-bar')).toBeInTheDocument();
-  });
-
-  it('renders login screen when signed out', () => {
-    renderApp();
-    expect(screen.getByText('Your applications grow in the Grove.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /github/i })).toBeInTheDocument();
-  });
-
-  it('renders Workbench when signed in', async () => {
-    mockIsSignedIn = true;
+  it('renders Workbench after bootstrap', async () => {
     renderApp();
     await waitFor(() => {
       expect(screen.getByTestId('workbench')).toBeInTheDocument();
     });
   });
 
-  it('shows loading when Clerk not loaded', () => {
-    mockIsLoaded = false;
+  it('renders Workbench regardless of auth state', async () => {
+    mockIsSignedIn = true;
     renderApp();
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('workbench')).toBeInTheDocument();
+    });
   });
 });
