@@ -134,7 +134,12 @@ mod tests {
     fn event_lifecycle_factory() {
         let session_id = Uuid::now_v7();
         let workspace_id = Uuid::now_v7();
-        let e = Event::lifecycle(session_id, workspace_id, "session_started", "Session started");
+        let e = Event::lifecycle(
+            session_id,
+            workspace_id,
+            "session_started",
+            "Session started",
+        );
         assert_eq!(e.session_id, session_id);
         assert_eq!(e.workspace_id, workspace_id);
         assert_eq!(e.event_type, "session_started");
