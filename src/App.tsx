@@ -1,24 +1,36 @@
+import { useEffect, useState } from 'react';
 import { Show, SignInButton } from '@clerk/react';
 import { Workbench } from '@paulbreuler/shell';
+import { bootstrapWorkbench } from '@/workbench/bootstrap';
+import { useThemeStore } from '@/stores/useThemeStore';
 
-/**
- * Root application component.
- *
- * When signed out, renders a branded sign-in page.
- * When signed in, renders the Alder Shell Workbench.
- */
 export function App() {
   return (
-    <Show
-      when="signed-in"
-      fallback={<SignInPage />}
-    >
-      <Workbench />
+    <Show when="signed-in" fallback={<SignInPage />}>
+      <AuthenticatedApp />
     </Show>
   );
 }
 
-/** Signed-out landing with Clerk sign-in button. */
+function AuthenticatedApp() {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    useThemeStore.getState().setTheme(useThemeStore.getState().theme);
+    bootstrapWorkbench().then(() => setReady(true));
+  }, []);
+
+  if (!ready) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-[var(--grove-surface-base)] text-[var(--grove-text-secondary)]">
+        Loading…
+      </div>
+    );
+  }
+
+  return <Workbench />;
+}
+
 function SignInPage() {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-[var(--grove-space-6)] bg-[var(--grove-surface-base)] text-[var(--grove-text-primary)] font-[var(--grove-font-sans)]">
@@ -34,4 +46,3 @@ function SignInPage() {
     </div>
   );
 }
-

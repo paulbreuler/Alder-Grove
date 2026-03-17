@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { App } from './App';
 
@@ -21,11 +21,20 @@ vi.mock('@clerk/react', () => ({
   },
   SignInButton: ({ children }: { children?: React.ReactNode }) =>
     children ?? <button>Sign in</button>,
-  ClerkProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  ClerkProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 vi.mock('@paulbreuler/shell', () => ({
   Workbench: () => <div data-testid="workbench">Workbench</div>,
+  globalExtensionRegistry: {
+    activate: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
+vi.mock('@/workbench/bootstrap', () => ({
+  bootstrapWorkbench: vi.fn().mockResolvedValue(undefined),
 }));
 
 function renderApp() {
@@ -54,16 +63,20 @@ describe('App', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders Shell Workbench when signed in', () => {
+  it('renders Workbench when signed in and bootstrapped', async () => {
     mockIsSignedIn = true;
     renderApp();
-    expect(screen.getByTestId('workbench')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('workbench')).toBeInTheDocument();
+    });
   });
 
-  it('does not render sign-in button when signed in', () => {
+  it('does not render sign-in when signed in', async () => {
     mockIsSignedIn = true;
     renderApp();
-    expect(screen.queryByText('Sign in')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByText('Sign in')).not.toBeInTheDocument();
+    });
   });
 
   it('does not render workbench when signed out', () => {

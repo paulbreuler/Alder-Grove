@@ -15,7 +15,10 @@
       {
         "title": "Alder Grove",
         "width": 1200,
-        "height": 800
+        "height": 800,
+        "decorations": false,
+        "theme": "Dark",
+        "center": true
       }
     ]
   }
