@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+/*
+ * Grove design tokens — all UI styling uses these custom properties.
+ * Populated by Alder Shell theme system; defaults here for standalone dev.
+ */
+:root {
+  --grove-surface-base: #0f1117;
+  --grove-surface-elevated: #1a1d27;
+  --grove-surface-sunken: #242836;
+  --grove-surface-overlay: #2a2e3c;
+  --grove-text-primary: #e4e4e7;
+  --grove-text-secondary: #a1a1aa;
+  --grove-text-muted: #71717a;
+  --grove-accent: #6366f1;
+  --grove-accent-hover: #818cf8;
+  --grove-border-default: #2e3240;
+  --grove-border-subtle: #232732;
+  --grove-border-strong: #3e4350;
+  --grove-radius-sm: 4px;
+  --grove-radius-md: 8px;
+  --grove-radius-lg: 12px;
+  --grove-space-1: 4px;
+  --grove-space-2: 8px;
+  --grove-space-3: 12px;
+  --grove-space-4: 16px;
+  --grove-space-6: 24px;
+  --grove-space-8: 32px;
+  --grove-space-12: 48px;
+  --grove-font-sans: system-ui, -apple-system, sans-serif;
+  --grove-font-mono: ui-monospace, "Fira Code", monospace;
+  --grove-font-size-base: 1rem;
+  --grove-font-size-sm: 0.875rem;
+  --grove-font-size-lg: 1.125rem;
+  --grove-font-weight-normal: 400;
+  --grove-font-weight-semibold: 600;
+  --grove-font-weight-bold: 700;
+  --grove-border-width: 1px;
+  --grove-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --grove-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3);
+  --grove-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: var(--grove-font-sans);
+  background: var(--grove-surface-base);
+  color: var(--grove-text-primary);
+}
