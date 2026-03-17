@@ -42,6 +42,34 @@ pub fn create_app(state: AppState) -> Router {
                 .put(routes::guardrail::update)
                 .delete(routes::guardrail::delete),
         )
+        .route(
+            "/orgs/{org_id}/workspaces/{ws_id}/sessions",
+            get(routes::session::list).post(routes::session::create),
+        )
+        .route(
+            "/orgs/{org_id}/workspaces/{ws_id}/sessions/{session_id}",
+            get(routes::session::get)
+                .put(routes::session::update)
+                .delete(routes::session::delete),
+        )
+        .route(
+            "/orgs/{org_id}/workspaces/{ws_id}/sessions/{session_id}/status",
+            axum::routing::patch(routes::session::transition_status),
+        )
+        .route(
+            "/orgs/{org_id}/workspaces/{ws_id}/gate-definitions",
+            get(routes::gate_definition::list).post(routes::gate_definition::create),
+        )
+        .route(
+            "/orgs/{org_id}/workspaces/{ws_id}/gate-definitions/{gate_def_id}",
+            get(routes::gate_definition::get)
+                .put(routes::gate_definition::update)
+                .delete(routes::gate_definition::delete),
+        )
+        .route(
+            "/orgs/{org_id}/workspaces/{ws_id}/sessions/{session_id}/events",
+            get(routes::event::list).post(routes::event::create),
+        )
         .fallback(|| async {
             ProblemDetails::from_status_code(axum::http::StatusCode::NOT_FOUND)
                 .with_detail("route not found")

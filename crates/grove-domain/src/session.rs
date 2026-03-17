@@ -67,11 +67,16 @@ pub struct Session {
     pub id: Uuid,
     pub workspace_id: Uuid,
     pub agent_id: Uuid,
+    pub title: String,
     pub status: SessionStatus,
     pub intent: SessionIntent,
     pub target_type: Option<SessionTargetType>,
     pub target_id: Option<Uuid>,
-    pub config: Option<serde_json::Value>,
+    pub context: serde_json::Value,
+    pub result: Option<serde_json::Value>,
+    pub initiated_by: String,
+    pub started_at: Option<DateTime<Utc>>,
+    pub completed_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -81,11 +86,16 @@ struct SessionDef {
     id: Uuid,
     workspace_id: Uuid,
     agent_id: Uuid,
+    title: String,
     status: SessionStatus,
     intent: SessionIntent,
     target_type: Option<SessionTargetType>,
     target_id: Option<Uuid>,
-    config: Option<serde_json::Value>,
+    context: serde_json::Value,
+    result: Option<serde_json::Value>,
+    initiated_by: String,
+    started_at: Option<DateTime<Utc>>,
+    completed_at: Option<DateTime<Utc>>,
     created_at: DateTime<Utc>,
     updated_at: DateTime<Utc>,
 }
@@ -98,11 +108,16 @@ impl Session {
         id: Uuid,
         workspace_id: Uuid,
         agent_id: Uuid,
+        title: String,
         status: SessionStatus,
         intent: SessionIntent,
         target_type: Option<SessionTargetType>,
         target_id: Option<Uuid>,
-        config: Option<serde_json::Value>,
+        context: serde_json::Value,
+        result: Option<serde_json::Value>,
+        initiated_by: String,
+        started_at: Option<DateTime<Utc>>,
+        completed_at: Option<DateTime<Utc>>,
         created_at: DateTime<Utc>,
         updated_at: DateTime<Utc>,
     ) -> Result<Self, DomainError> {
@@ -116,17 +131,24 @@ impl Session {
             id,
             workspace_id,
             agent_id,
+            title,
             status,
             intent,
             target_type,
             target_id,
-            config,
+            context,
+            result,
+            initiated_by,
+            started_at,
+            completed_at,
             created_at,
             updated_at,
         })
     }
 
     /// Validate and apply a status transition, updating `updated_at`.
+    /// Sets `started_at` when transitioning to Active (if not already set).
+    /// Sets `completed_at` when transitioning to a terminal state.
     pub fn transition_to(&mut self, target: SessionStatus) -> Result<(), DomainError> {
         if !self.status.can_transition_to(target) {
             return Err(DomainError::Conflict(format!(
@@ -134,8 +156,25 @@ impl Session {
                 self.status, target
             )));
         }
+
+        let now = Utc::now();
+
+        if target == SessionStatus::Active && self.started_at.is_none() {
+            self.started_at = Some(now);
+        }
+
+        if matches!(
+            target,
+            SessionStatus::Completed
+                | SessionStatus::Failed
+                | SessionStatus::Cancelled
+                | SessionStatus::TimedOut
+        ) {
+            self.completed_at = Some(now);
+        }
+
         self.status = target;
-        self.updated_at = Utc::now();
+        self.updated_at = now;
         Ok(())
     }
 
@@ -180,11 +219,16 @@ impl<'de> Deserialize<'de> for Session {
             raw.id,
             raw.workspace_id,
             raw.agent_id,
+            raw.title,
             raw.status,
             raw.intent,
             raw.target_type,
             raw.target_id,
-            raw.config,
+            raw.context,
+            raw.result,
+            raw.initiated_by,
+            raw.started_at,
+            raw.completed_at,
             raw.created_at,
             raw.updated_at,
         )
@@ -197,6 +241,29 @@ mod tests {
     use super::*;
     use chrono::Utc;
     use uuid::Uuid;
+
+    /// Helper to build a Session with sensible defaults, reducing boilerplate.
+    fn make_session(status: SessionStatus, intent: SessionIntent) -> Session {
+        let now = Utc::now();
+        Session::new(
+            Uuid::now_v7(),
+            Uuid::now_v7(),
+            Uuid::now_v7(),
+            "Test session".into(),
+            status,
+            intent,
+            None,
+            None,
+            serde_json::json!({}),
+            None,
+            "user_test".into(),
+            None,
+            None,
+            now,
+            now,
+        )
+        .unwrap()
+    }
 
     #[test]
     fn session_status_serializes_to_snake_case() {
@@ -269,10 +336,15 @@ mod tests {
             Uuid::now_v7(),
             Uuid::now_v7(),
             Uuid::now_v7(),
+            "Implement feature X".into(),
             SessionStatus::Pending,
             SessionIntent::Implement,
             Some(SessionTargetType::Specification),
             Some(Uuid::now_v7()),
+            serde_json::json!({"key": "value"}),
+            None,
+            "user_abc".into(),
+            None,
             None,
             now,
             now,
@@ -281,10 +353,16 @@ mod tests {
         let json = serde_json::to_string(&session).unwrap();
         let back: Session = serde_json::from_str(&json).unwrap();
         assert_eq!(session.id, back.id);
+        assert_eq!(session.title, back.title);
         assert_eq!(session.status, back.status);
         assert_eq!(session.intent, back.intent);
         assert_eq!(session.target_type, back.target_type);
         assert_eq!(session.target_id, back.target_id);
+        assert_eq!(session.context, back.context);
+        assert_eq!(session.result, back.result);
+        assert_eq!(session.initiated_by, back.initiated_by);
+        assert_eq!(session.started_at, back.started_at);
+        assert_eq!(session.completed_at, back.completed_at);
     }
 
     #[test]
@@ -295,9 +373,14 @@ mod tests {
             Uuid::now_v7(),
             Uuid::now_v7(),
             Uuid::now_v7(),
+            "Test".into(),
             SessionStatus::Pending,
             SessionIntent::Analyze,
             None,
+            None,
+            serde_json::json!({}),
+            None,
+            "user_test".into(),
             None,
             None,
             now,
@@ -310,10 +393,15 @@ mod tests {
             Uuid::now_v7(),
             Uuid::now_v7(),
             Uuid::now_v7(),
+            "Test".into(),
             SessionStatus::Pending,
             SessionIntent::Analyze,
             Some(SessionTargetType::Task),
             Some(Uuid::now_v7()),
+            serde_json::json!({}),
+            None,
+            "user_test".into(),
+            None,
             None,
             now,
             now,
@@ -325,9 +413,14 @@ mod tests {
             Uuid::now_v7(),
             Uuid::now_v7(),
             Uuid::now_v7(),
+            "Test".into(),
             SessionStatus::Pending,
             SessionIntent::Analyze,
             Some(SessionTargetType::Task),
+            None,
+            serde_json::json!({}),
+            None,
+            "user_test".into(),
             None,
             None,
             now,
@@ -347,9 +440,12 @@ mod tests {
         let json = format!(
             concat!(
                 r#"{{"id":"{}","workspace_id":"{}","agent_id":"{}","#,
+                r#""title":"Test","#,
                 r#""status":"pending","intent":"implement","#,
                 r#""target_type":null,"target_id":"{}","#,
-                r#""config":null,"#,
+                r#""context":{{}},"result":null,"#,
+                r#""initiated_by":"user_test","#,
+                r#""started_at":null,"completed_at":null,"#,
                 r#""created_at":"{}","updated_at":"{}"}}"#
             ),
             Uuid::now_v7(),
@@ -366,168 +462,115 @@ mod tests {
         );
     }
 
-    // ── New behavioral tests ──
+    // ── Behavioral tests ──
 
     #[test]
     fn session_start_transitions_pending_to_active() {
-        let now = Utc::now();
-        let mut session = Session::new(
-            Uuid::now_v7(),
-            Uuid::now_v7(),
-            Uuid::now_v7(),
-            SessionStatus::Pending,
-            SessionIntent::Implement,
-            None,
-            None,
-            None,
-            now,
-            now,
-        )
-        .unwrap();
+        let mut session = make_session(SessionStatus::Pending, SessionIntent::Implement);
+        let before = session.updated_at;
         assert!(session.start().is_ok());
         assert_eq!(session.status, SessionStatus::Active);
-        assert!(session.updated_at >= now);
+        assert!(session.started_at.is_some());
+        assert!(session.updated_at >= before);
     }
 
     #[test]
     fn session_start_rejects_non_pending() {
-        let now = Utc::now();
-        let mut session = Session::new(
-            Uuid::now_v7(),
-            Uuid::now_v7(),
-            Uuid::now_v7(),
-            SessionStatus::Active,
-            SessionIntent::Implement,
-            None,
-            None,
-            None,
-            now,
-            now,
-        )
-        .unwrap();
+        let mut session = make_session(SessionStatus::Active, SessionIntent::Implement);
         let err = session.start().unwrap_err();
         assert!(matches!(err, DomainError::Conflict(_)));
     }
 
     #[test]
     fn session_complete_from_active() {
-        let now = Utc::now();
-        let mut session = Session::new(
-            Uuid::now_v7(),
-            Uuid::now_v7(),
-            Uuid::now_v7(),
-            SessionStatus::Active,
-            SessionIntent::Review,
-            None,
-            None,
-            None,
-            now,
-            now,
-        )
-        .unwrap();
+        let mut session = make_session(SessionStatus::Active, SessionIntent::Review);
         assert!(session.complete().is_ok());
         assert_eq!(session.status, SessionStatus::Completed);
+        assert!(session.completed_at.is_some());
     }
 
     #[test]
     fn session_fail_from_active() {
-        let now = Utc::now();
-        let mut session = Session::new(
-            Uuid::now_v7(),
-            Uuid::now_v7(),
-            Uuid::now_v7(),
-            SessionStatus::Active,
-            SessionIntent::Implement,
-            None,
-            None,
-            None,
-            now,
-            now,
-        )
-        .unwrap();
+        let mut session = make_session(SessionStatus::Active, SessionIntent::Implement);
         assert!(session.fail().is_ok());
         assert_eq!(session.status, SessionStatus::Failed);
+        assert!(session.completed_at.is_some());
     }
 
     #[test]
     fn session_gate_and_resume_lifecycle() {
-        let now = Utc::now();
-        let mut session = Session::new(
-            Uuid::now_v7(),
-            Uuid::now_v7(),
-            Uuid::now_v7(),
-            SessionStatus::Active,
-            SessionIntent::Implement,
-            None,
-            None,
-            None,
-            now,
-            now,
-        )
-        .unwrap();
+        let mut session = make_session(SessionStatus::Active, SessionIntent::Implement);
         // Active -> Gated
         assert!(session.gate().is_ok());
         assert_eq!(session.status, SessionStatus::Gated);
-        // Gated -> Active (resume)
+        // Gated -> Active (resume) — started_at should not be overwritten
         assert!(session.resume().is_ok());
         assert_eq!(session.status, SessionStatus::Active);
     }
 
     #[test]
     fn session_cancel_from_active_or_gated() {
-        let now = Utc::now();
-        let mut s1 = Session::new(
-            Uuid::now_v7(),
-            Uuid::now_v7(),
-            Uuid::now_v7(),
-            SessionStatus::Active,
-            SessionIntent::Implement,
-            None,
-            None,
-            None,
-            now,
-            now,
-        )
-        .unwrap();
+        let mut s1 = make_session(SessionStatus::Active, SessionIntent::Implement);
         assert!(s1.cancel().is_ok());
         assert_eq!(s1.status, SessionStatus::Cancelled);
+        assert!(s1.completed_at.is_some());
 
-        let mut s2 = Session::new(
-            Uuid::now_v7(),
-            Uuid::now_v7(),
-            Uuid::now_v7(),
-            SessionStatus::Gated,
-            SessionIntent::Implement,
-            None,
-            None,
-            None,
-            now,
-            now,
-        )
-        .unwrap();
+        let mut s2 = make_session(SessionStatus::Gated, SessionIntent::Implement);
         assert!(s2.cancel().is_ok());
         assert_eq!(s2.status, SessionStatus::Cancelled);
+        assert!(s2.completed_at.is_some());
     }
 
     #[test]
     fn session_transition_to_rejects_invalid() {
-        let now = Utc::now();
-        let mut session = Session::new(
-            Uuid::now_v7(),
-            Uuid::now_v7(),
-            Uuid::now_v7(),
-            SessionStatus::Completed,
-            SessionIntent::Implement,
-            None,
-            None,
-            None,
-            now,
-            now,
-        )
-        .unwrap();
+        let mut session = make_session(SessionStatus::Completed, SessionIntent::Implement);
         let err = session.transition_to(SessionStatus::Active).unwrap_err();
         assert!(matches!(err, DomainError::Conflict(_)));
         // Status should not have changed
         assert_eq!(session.status, SessionStatus::Completed);
+    }
+
+    // ── New timestamp behavior tests ──
+
+    #[test]
+    fn transition_to_active_sets_started_at() {
+        let mut session = make_session(SessionStatus::Pending, SessionIntent::Execute);
+        assert!(session.started_at.is_none());
+        session.start().unwrap();
+        assert!(session.started_at.is_some());
+    }
+
+    #[test]
+    fn resume_from_gated_does_not_overwrite_started_at() {
+        let mut session = make_session(SessionStatus::Pending, SessionIntent::Execute);
+        session.start().unwrap();
+        let original_started = session.started_at;
+        session.gate().unwrap();
+        session.resume().unwrap();
+        assert_eq!(session.started_at, original_started);
+    }
+
+    #[test]
+    fn terminal_transitions_set_completed_at() {
+        // Completed
+        let mut s1 = make_session(SessionStatus::Active, SessionIntent::Implement);
+        assert!(s1.completed_at.is_none());
+        s1.complete().unwrap();
+        assert!(s1.completed_at.is_some());
+
+        // Failed
+        let mut s2 = make_session(SessionStatus::Active, SessionIntent::Implement);
+        s2.fail().unwrap();
+        assert!(s2.completed_at.is_some());
+
+        // Cancelled
+        let mut s3 = make_session(SessionStatus::Active, SessionIntent::Implement);
+        s3.cancel().unwrap();
+        assert!(s3.completed_at.is_some());
+
+        // TimedOut (from Gated)
+        let mut s4 = make_session(SessionStatus::Gated, SessionIntent::Implement);
+        s4.transition_to(SessionStatus::TimedOut).unwrap();
+        assert!(s4.completed_at.is_some());
     }
 }

@@ -9,7 +9,7 @@ set -euo pipefail
 #   ./scripts/e2e.sh health.hurl  # Run a single test file
 
 export API_PORT="${API_PORT:-3001}"
-export DATABASE_URL="${DATABASE_URL:-postgres://grove:grove_dev@localhost:5432/grove_dev}"
+export DATABASE_URL="${DATABASE_URL:-postgres://grove:grove_dev@localhost:5463/grove_dev}"
 API_URL="http://localhost:${API_PORT}"
 E2E_DIR="$(cd "$(dirname "$0")/../tests/e2e" && pwd)"
 API_PID=""

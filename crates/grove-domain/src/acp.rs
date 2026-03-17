@@ -138,6 +138,7 @@ mod tests {
         let event = Event {
             id: Uuid::now_v7(),
             session_id: Uuid::now_v7(),
+            workspace_id: Uuid::now_v7(),
             event_type: "file_modify".into(),
             category: EventCategory::Action,
             summary: "Modified main.rs".into(),
