@@ -108,7 +108,11 @@ const SELECT_COLS: &str = "\
 
 #[async_trait]
 impl EventRepository for PgEventRepo {
-    async fn find_all(&self, workspace_id: Uuid, session_id: Uuid) -> Result<Vec<Event>, DomainError> {
+    async fn find_all(
+        &self,
+        workspace_id: Uuid,
+        session_id: Uuid,
+    ) -> Result<Vec<Event>, DomainError> {
         let mut tx = TenantTx::begin(&self.pool, workspace_id)
             .await
             .map_err(|e| DomainError::Internal(e.to_string()))?;

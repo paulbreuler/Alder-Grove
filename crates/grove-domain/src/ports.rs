@@ -83,7 +83,11 @@ pub trait GateRepository: CrudRepository<Gate> {
 /// `workspace_id` is required for RLS-scoped TenantTx isolation.
 #[async_trait::async_trait]
 pub trait EventRepository: Send + Sync {
-    async fn find_all(&self, workspace_id: Uuid, session_id: Uuid) -> Result<Vec<Event>, DomainError>;
+    async fn find_all(
+        &self,
+        workspace_id: Uuid,
+        session_id: Uuid,
+    ) -> Result<Vec<Event>, DomainError>;
     async fn create(&self, event: &Event) -> Result<Event, DomainError>;
 }
 
