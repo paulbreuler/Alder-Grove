@@ -6,7 +6,8 @@ export const userExtension: Extension = {
   name: 'User Profile',
 
   activate: (ctx): void => {
-    // Register in bottom zone, above Settings (order 100)
+    // Bottom zone, above Settings. No editor/panel views —
+    // SignInButton opens a modal, UserButton opens its own popup.
     ctx.registerActivityBarItem({
       id: 'grove.user',
       icon: UserAvatar,
