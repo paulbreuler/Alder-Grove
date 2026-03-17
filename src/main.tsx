@@ -5,14 +5,18 @@ import { BrowserRouter } from 'react-router-dom';
 import { App } from './App';
 import './app.css';
 
-const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-if (!CLERK_KEY) {
-  throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY environment variable');
+// Clerk reads VITE_CLERK_PUBLISHABLE_KEY automatically at runtime.
+// The SDK types require the prop explicitly for type safety.
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+if (!PUBLISHABLE_KEY) {
+  throw new Error(
+    'Missing VITE_CLERK_PUBLISHABLE_KEY — add it to .env.local',
+  );
 }
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ClerkProvider publishableKey={CLERK_KEY} afterSignOutUrl="/">
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
       <BrowserRouter>
         <App />
       </BrowserRouter>
