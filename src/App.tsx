@@ -21,36 +21,13 @@ export function App() {
 /** Signed-out landing with Clerk sign-in button. */
 function SignInPage() {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100%',
-        gap: 'var(--grove-space-lg)',
-        background: 'var(--grove-bg-primary)',
-        color: 'var(--grove-text-primary)',
-        fontFamily: 'var(--grove-font-sans)',
-      }}
-    >
-      <h1 style={{ margin: 0 }}>Alder Grove</h1>
-      <p style={{ color: 'var(--grove-text-secondary)', margin: 0 }}>
+    <div className="flex flex-col items-center justify-center h-full gap-[var(--grove-space-6)] bg-[var(--grove-surface-base)] text-[var(--grove-text-primary)] font-[var(--grove-font-sans)]">
+      <h1 className="m-0">Alder Grove</h1>
+      <p className="m-0 text-[var(--grove-text-secondary)]">
         Your applications grow in the Grove.
       </p>
       <SignInButton mode="modal">
-        <button
-          style={{
-            padding: `var(--grove-space-sm) var(--grove-space-lg)`,
-            background: 'var(--grove-accent)',
-            color: 'var(--grove-text-primary)',
-            border: 'none',
-            borderRadius: 'var(--grove-radius-md)',
-            cursor: 'pointer',
-            fontFamily: 'var(--grove-font-sans)',
-            fontSize: 'var(--grove-font-size-base)',
-          }}
-        >
+        <button className="py-[var(--grove-space-2)] px-[var(--grove-space-6)] bg-[var(--grove-accent)] text-[var(--grove-text-primary)] border-none rounded-[var(--grove-radius-md)] cursor-pointer font-[var(--grove-font-sans)] text-[var(--grove-font-size-base)]">
           Sign in
         </button>
       </SignInButton>

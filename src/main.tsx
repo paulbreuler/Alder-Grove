@@ -6,6 +6,9 @@ import { App } from './App';
 import './app.css';
 
 const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+if (!CLERK_KEY) {
+  throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY environment variable');
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
