@@ -54,11 +54,11 @@ Run `cargo test -p grove-domain` — expect RED.
 ```rust
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use ts_rs::TS;
 use uuid::Uuid;
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[cfg_attr(feature = "ts", ts(export))]
 pub struct <EntityName> {
     pub id: Uuid,
     pub workspace_id: Uuid,  // if workspace-scoped
@@ -73,15 +73,18 @@ pub struct <EntityName> {
 Add to `crates/grove-domain/src/ports.rs`:
 
 ```rust
-#[async_trait]
-pub trait <EntityName>Repository: Send + Sync {
-    async fn create(&self, tx: &mut TenantTx, entity: &Create<EntityName>) -> Result<<EntityName>, DomainError>;
-    async fn get_by_id(&self, tx: &mut TenantTx, id: Uuid) -> Result<Option<<EntityName>>, DomainError>;
-    async fn list(&self, tx: &mut TenantTx) -> Result<Vec<<EntityName>>, DomainError>;
-    async fn update(&self, tx: &mut TenantTx, id: Uuid, entity: &Update<EntityName>) -> Result<<EntityName>, DomainError>;
-    async fn delete(&self, tx: &mut TenantTx, id: Uuid) -> Result<(), DomainError>;
+/// Extends CrudRepository with any entity-specific queries.
+/// For simple entities, just implement CrudRepository<EntityName> directly.
+#[async_trait::async_trait]
+pub trait <EntityName>Repository: CrudRepository<<EntityName>> {
+    // Add entity-specific queries here, e.g.:
+    // async fn find_by_status(&self, scope_id: Uuid, status: Status) -> Result<Vec<<EntityName>>, DomainError>;
 }
 ```
+
+If the entity has no special queries beyond CRUD, skip the custom trait entirely
+and use `CrudRepository<<EntityName>>` directly (see `ports.rs` for the generic
+trait definition).
 
 **2d. Add DomainError variant** if needed in `crates/grove-domain/src/error.rs`.
 
@@ -108,14 +111,14 @@ Run `cargo test -p grove-api` — expect RED.
 
 - Implement the port trait from grove-domain
 - Use `TenantTx` for all queries (workspace isolation)
-- Use `sqlx::query_as!` or `sqlx::query!` macros
+- Use runtime `sqlx::query_as::<_, Row>(...)` pattern (no compile-time DB coupling)
 - Register in `crates/grove-api/src/db/mod.rs`
 
 **3c. Create routes:**
 
 `crates/grove-api/src/routes/<entity_snake>.rs`:
 
-- Routes: `POST /`, `GET /`, `GET /:id`, `PUT /:id`, `DELETE /:id`
+- Routes: `POST /`, `GET /`, `GET /{id}`, `PUT /{id}`, `DELETE /{id}`
 - Full path: `/orgs/{org_id}/workspaces/{ws_id}/<entity_plural>`
 - Use Clerk auth extractor
 - Use `resolve_workspace()` for workspace ownership verification
@@ -144,7 +147,7 @@ bindings. Verify the generated file includes the new entity type.
 Create `src/features/<extension>/adapters/<entityCamel>Api.ts`:
 
 ```typescript
-import type { <EntityName> } from '@generated/types';  // or correct import path
+import type { <EntityName> } from '@/generated/<EntityName>';
 
 const BASE = '/orgs';
 
@@ -213,7 +216,7 @@ pnpm test                  # All frontend tests pass
 
 Before marking complete, verify:
 
-- [ ] `crates/grove-domain/src/<entity_snake>.rs` — domain type with `#[derive(TS)]` and `#[ts(export)]`
+- [ ] `crates/grove-domain/src/<entity_snake>.rs` — domain type with feature-gated `#[cfg_attr(feature = "ts", derive(ts_rs::TS))]`
 - [ ] Port trait added to `crates/grove-domain/src/ports.rs`
 - [ ] Module registered in `crates/grove-domain/src/lib.rs`
 - [ ] Domain tests pass (`cargo test -p grove-domain`)
@@ -240,7 +243,7 @@ Before marking complete, verify:
 ## Rules
 
 - TDD is mandatory at every layer — test BEFORE implementation
-- Domain types must use `#[derive(Debug, Clone, Serialize, Deserialize, TS)]` and `#[ts(export)]`
+- Domain types must use `#[derive(Debug, Clone, Serialize, Deserialize)]` with feature-gated `#[cfg_attr(feature = "ts", derive(ts_rs::TS))]` and `#[cfg_attr(feature = "ts", ts(export))]`
 - All API routes require Clerk auth middleware
 - All repo queries go through `TenantTx` for workspace isolation
 - Handlers inject repos via `Arc<dyn PortTrait>` — never import concrete repo types in routes
