@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@paulbreuler/shell/styles";
 
 /*
  * Grove design tokens — all UI styling uses these custom properties.
