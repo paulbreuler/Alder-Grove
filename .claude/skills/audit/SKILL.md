@@ -6,18 +6,34 @@ user_invocable: true
 
 # /audit
 
-Comprehensive quality gate for Alder Grove. Runs three passes and reports overall
-PASS/FAIL.
+Comprehensive 5-pass quality gate for Alder Grove. Runs all sub-audits and
+reports overall PASS/FAIL.
 
-## Pass 1: Architecture Compliance
+## Arguments
 
-Run the specialist architecture checks:
+`$ARGUMENTS` controls which sub-audits to run:
 
-- `/check-frontend-architecture`
-- `/check-backend-architecture`
-- `/check-architecture` may be used as the aggregate wrapper when a combined report is needed
+- `/audit` — run all 5 passes
+- `/audit architecture` — run only Architecture pass
+- `/audit docs tokens` — run only Documentation and Design Tokens passes
+- `/audit build security` — run only Build & Test and Security passes
 
-## Pass 2: Build & Test
+Valid names: `architecture`, `build`, `docs`, `tokens`, `security`
+
+If `$ARGUMENTS` is empty or not provided, run all 5 passes.
+
+## Passes
+
+### Pass 1: Architecture Compliance
+
+Run the `/check-architecture` skill (reads `.claude/skills/check-architecture/SKILL.md`).
+
+This dispatches the frontend and backend architecture specialists and
+aggregates results.
+
+### Pass 2: Build & Test
+
+Run these commands sequentially — all must pass:
 
 ```bash
 # Frontend
@@ -25,51 +41,62 @@ pnpm check          # TypeScript type checking + ESLint
 pnpm test           # Vitest unit tests
 
 # Rust
-cargo build --workspace    # Build all crates
-cargo test --workspace     # Run all Rust tests
-cargo clippy --workspace   # Lint Rust code
+cargo build --workspace       # Build all crates
+cargo test --workspace        # Run all Rust tests
+cargo clippy --workspace -- -D warnings   # Lint Rust code (warnings = errors)
 ```
 
-All must pass. Any failure = overall FAIL.
+Any failure in this pass = overall FAIL.
 
-## Pass 3: Documentation Consistency
+### Pass 3: Documentation Consistency
 
-- `CLAUDE.md` and `AGENTS.md` reflect the current project guidance
-- `.agents/skills/` bridges point to the current `.claude/skills/` source
-- `docs/architecture-reference.md` tech stack matches actual dependencies
-- Shell extension table matches registered extensions
-- Design specs in `.docs/superpowers/specs/` reference existing features
+Run the `/audit-docs` skill (reads `.claude/skills/audit-docs/SKILL.md`).
 
-## Output
+If the skill file does not exist, report as SKIP with WARNING.
+
+### Pass 4: Design Tokens
+
+Run the `/audit-tokens` skill (reads `.claude/skills/audit-tokens/SKILL.md`).
+
+If the skill file does not exist, report as SKIP with WARNING.
+
+### Pass 5: Security
+
+Run the `/audit-security` skill (reads `.claude/skills/audit-security/SKILL.md`).
+
+If the skill file does not exist, report as SKIP with WARNING.
+
+## Parallelization
+
+Passes 3, 4, and 5 are independent of each other. When running all passes,
+dispatch them via the Agent tool in parallel where possible. Passes 1 and 2
+may also run in parallel with each other but their results must be collected
+before the final summary.
+
+## Output Format
 
 ```
 === ALDER GROVE AUDIT ===
 
-Pass 1: Architecture Compliance
-  ✅ Frontend architecture
-  ✅ Backend architecture
-  RESULT: PASS
+| #  | Section              | Status | Findings | Top Issue                        |
+|----|----------------------|--------|----------|----------------------------------|
+| 1  | Architecture         | PASS   | 0        | —                                |
+| 2  | Build & Test         | PASS   | 0        | —                                |
+| 3  | Documentation        | PASS   | 1        | /audit-tokens missing from table |
+| 4  | Design Tokens        | FAIL   | 3        | Hardcoded #ff0000 in Panel.tsx   |
+| 5  | Security             | SKIP   | —        | Skill not found (WARNING)        |
 
-Pass 2: Build & Test
-  ✅ pnpm check
-  ✅ pnpm test (42 tests passed)
-  ✅ cargo build
-  ✅ cargo test (18 tests passed)
-  ✅ cargo clippy
-  RESULT: PASS
-
-Pass 3: Documentation Consistency
-  ✅ CLAUDE.md and AGENTS.md current
-  ⚠️  docs/architecture-reference.md tech stack — missing Biome from table
-  ✅ Extension table matches code
-  RESULT: PASS (1 warning)
-
-=== OVERALL: PASS ===
+=== OVERALL: 3/5 PASS — 4 total findings ===
 ```
 
 ## Rules
 
-- Run ALL passes — do not skip any
-- Architecture and Build passes are required (FAIL = overall FAIL)
-- Documentation pass warnings don't block, but should be reported
+- Run ALL requested passes — do not skip any unless the skill file is missing
+- A pass is FAIL if it has any HIGH or CRITICAL findings
+- A pass is PASS if it has only LOW or MEDIUM findings (or none)
+- A pass is SKIP if its skill file does not exist (shown as WARNING)
+- Overall result: FAIL if ANY pass is FAIL; PASS if all passes are PASS or SKIP
+- Skipped sections count toward neither PASS nor FAIL in the denominator
+- Report the total number of passes that were PASS out of those actually run
+- When `$ARGUMENTS` limits scope, only count the requested passes
 - Run this before creating PRs or claiming work is complete

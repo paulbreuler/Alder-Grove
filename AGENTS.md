@@ -12,7 +12,11 @@ Path-specific guidance lives in `.claude/rules/*.md`.
 
 When a user invokes a slash-style command, load the matching file from `.claude/commands/`.
 
+- `/add-extension` -> `.claude/commands/add-extension.md`
+- `/add-feature` -> `.claude/commands/add-feature.md`
 - `/audit` -> `.claude/commands/audit.md`
+- `/audit-docs` -> `.claude/commands/audit-docs.md`
+- `/audit-security` -> `.claude/commands/audit-security.md`
 - `/audit-tests` -> `.claude/commands/audit-tests.md`
 - `/audit-tokens` -> `.claude/commands/audit-tokens.md`
 - `/check-architecture` -> `.claude/commands/check-architecture.md`
@@ -21,6 +25,8 @@ When a user invokes a slash-style command, load the matching file from `.claude/
 - `/code-review` -> `.claude/commands/code-review.md`
 - `/commit` -> `.claude/commands/commit.md`
 - `/pr` -> `.claude/commands/pr.md`
+- `/red-team` -> `.claude/commands/red-team.md`
+- `/scaffold-entity` -> `.claude/commands/scaffold-entity.md`
 
 ## Skills
 
@@ -28,6 +34,8 @@ Codex discovers skills from `.agents/skills/*/SKILL.md`.
 Each generated skill file is a minimal wrapper around the canonical `.claude/skills/*/SKILL.md` source.
 
 - `audit` -> `.claude/skills/audit/SKILL.md`
+- `audit-docs` -> `.claude/skills/audit-docs/SKILL.md`
+- `audit-security` -> `.claude/skills/audit-security/SKILL.md`
 - `audit-tests` -> `.claude/skills/audit-tests/SKILL.md`
 - `audit-tokens` -> `.claude/skills/audit-tokens/SKILL.md`
 - `check-architecture` -> `.claude/skills/check-architecture/SKILL.md`
@@ -36,6 +44,7 @@ Each generated skill file is a minimal wrapper around the canonical `.claude/ski
 - `code-review` -> `.claude/skills/code-review/SKILL.md`
 - `commit` -> `.claude/skills/commit/SKILL.md`
 - `pr` -> `.claude/skills/pr/SKILL.md`
+- `red-team` -> `.claude/skills/red-team/SKILL.md`
 
 ## Agent Roles
 
