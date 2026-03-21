@@ -92,12 +92,17 @@ export const <camelName>Extension: Extension = {
 ```
 
 Follow the naming convention:
-- Extension variable: `<camelCase>Extension` (e.g., `settingsExtension`)
-- Extension ID: `grove.<kebab-case>` (e.g., `grove.settings`)
+- Extension variable: `<camelName>Extension` (e.g., `settingsExtension`)
+- Extension ID: `grove.<name>` (e.g., `grove.settings`)
 
 ### Step 7: Wire into App.tsx
 
-Add the extension to the bootstrap array in `src/App.tsx`:
+> **NOTE:** Extension bootstrapping is not yet implemented in App.tsx. When
+> creating the first extension, you will need to add the extension registration
+> mechanism. Until then, document the extension in this file and wire it when
+> the Shell integration is built out.
+
+Once extension bootstrapping exists in `src/App.tsx`:
 
 1. Import the extension: `import { <camelName>Extension } from './features/<name>/extension';`
 2. Add to the extensions array passed to Shell
@@ -116,7 +121,7 @@ Before marking complete, verify:
 - [ ] `src/features/<name>/domain/types.ts` exists with pure types
 - [ ] `src/features/<name>/domain/types.test.ts` exists and passes
 - [ ] `src/features/<name>/extension.tsx` exists with correct id and structure
-- [ ] Extension is wired into `src/App.tsx` bootstrap array
+- [ ] Extension is wired into `src/App.tsx` bootstrap array (or documented for future wiring)
 - [ ] No imports from other features (no cross-feature coupling)
 - [ ] All CSS uses `--grove-*` design tokens only
 - [ ] `application/`, `adapters/`, `ui/` directories exist (with `.gitkeep`)

@@ -35,7 +35,7 @@ Route the feature to the correct hexagonal layer:
 | React components, forms, views         | `ui/`           | `src/features/<parent>/ui/`                    |
 
 **Dependency rules** (inward only):
-- `ui/` may import from `application/`, `domain/`
+- `ui/` may import from `application/` only (never `domain/` or `adapters/` directly)
 - `application/` may import from `domain/`
 - `adapters/` may import from `domain/`
 - `domain/` may not import from any other layer

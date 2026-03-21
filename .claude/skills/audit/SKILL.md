@@ -86,7 +86,7 @@ before the final summary.
 | 4  | Design Tokens        | FAIL   | 3        | Hardcoded #ff0000 in Panel.tsx   |
 | 5  | Security             | SKIP   | —        | Skill not found (WARNING)        |
 
-=== OVERALL: 3/5 PASS — 4 total findings ===
+=== OVERALL: FAIL — 3/4 PASS (1 SKIP) — 4 total findings ===
 ```
 
 ## Rules
