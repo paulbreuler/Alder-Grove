@@ -18,7 +18,7 @@ export function SettingsLeftPanel(): React.JSX.Element {
           <div key={group.id}>
             <button
               onClick={() => toggleGroup(group.id)}
-              className="flex items-center gap-2 w-full px-3 py-1.5 hover:bg-[var(--grove-surface-elevated)] text-[var(--grove-text-primary)]"
+              className="flex items-center gap-[var(--grove-space-2)] w-full px-[var(--grove-space-3)] py-1.5 hover:bg-[var(--grove-surface-elevated)] text-[var(--grove-text-primary)]"
             >
               <ChevronRight
                 size={14}
@@ -36,7 +36,7 @@ export function SettingsLeftPanel(): React.JSX.Element {
                   key={leaf.id}
                   onClick={() => selectItem(leaf.id)}
                   className={cn(
-                    'w-full text-left pl-10 pr-3 py-1.5 text-[var(--grove-text-secondary)] hover:bg-[var(--grove-surface-elevated)]',
+                    'w-full text-left pl-10 pr-[var(--grove-space-3)] py-1.5 text-[var(--grove-text-secondary)] hover:bg-[var(--grove-surface-elevated)]',
                     selectedItemId === leaf.id &&
                       'bg-[var(--grove-surface-elevated)] text-[var(--grove-text-primary)]',
                   )}
