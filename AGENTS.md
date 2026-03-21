@@ -12,8 +12,12 @@ Path-specific guidance lives in `.claude/rules/*.md`.
 
 When a user invokes a slash-style command, load the matching file from `.claude/commands/`.
 
+- `/add-api-endpoint` -> `.claude/commands/add-api-endpoint.md`
+- `/add-component` -> `.claude/commands/add-component.md`
 - `/add-extension` -> `.claude/commands/add-extension.md`
 - `/add-feature` -> `.claude/commands/add-feature.md`
+- `/add-migration` -> `.claude/commands/add-migration.md`
+- `/add-tauri-command` -> `.claude/commands/add-tauri-command.md`
 - `/audit` -> `.claude/commands/audit.md`
 - `/audit-docs` -> `.claude/commands/audit-docs.md`
 - `/audit-security` -> `.claude/commands/audit-security.md`
@@ -33,8 +37,12 @@ When a user invokes a slash-style command, load the matching file from `.claude/
 Codex discovers skills from `.agents/skills/*/SKILL.md`.
 Each generated skill file is a minimal wrapper around the canonical `.claude/skills/*/SKILL.md` source.
 
+- `add-api-endpoint` -> `.claude/skills/add-api-endpoint/SKILL.md`
+- `add-component` -> `.claude/skills/add-component/SKILL.md`
 - `add-extension` -> `.claude/skills/add-extension/SKILL.md`
 - `add-feature` -> `.claude/skills/add-feature/SKILL.md`
+- `add-migration` -> `.claude/skills/add-migration/SKILL.md`
+- `add-tauri-command` -> `.claude/skills/add-tauri-command/SKILL.md`
 - `audit` -> `.claude/skills/audit/SKILL.md`
 - `audit-docs` -> `.claude/skills/audit-docs/SKILL.md`
 - `audit-security` -> `.claude/skills/audit-security/SKILL.md`

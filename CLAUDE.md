@@ -155,6 +155,14 @@ docker compose up -d      # Start PostgreSQL
 | `/audit-tests`       | Audit test suite health, coverage gaps, TDD compliance |
 | `/audit-docs`        | Validate documentation sync between CLAUDE.md and disk |
 | `/audit-security`    | OWASP Top 10 pattern scan for common vulnerabilities |
+| `/add-component`     | Scaffold React component with Vitest TDD             |
+| `/add-api-endpoint`  | Scaffold REST endpoint with hexagonal layers         |
+| `/add-tauri-command` | Scaffold Tauri IPC command (full round-trip)         |
+| `/add-migration`     | Scaffold SQL migration with RLS                      |
+| `/add-extension`     | Scaffold Shell extension with hexagonal layers       |
+| `/add-feature`       | Add sub-feature to existing extension                |
+| `/scaffold-entity`   | Full-stack entity (domain → API → frontend)          |
+| `/red-team`          | Adversarial security sweep                           |
 
 ## AI Assistant Compatibility
 

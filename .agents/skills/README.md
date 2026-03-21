@@ -7,8 +7,12 @@ Do not edit files in `.agents/skills/` by hand.
 
 | Skill                       | Canonical Source                                      |
 | --------------------------- | ----------------------------------------------------- |
+| add-api-endpoint            | `.claude/skills/add-api-endpoint/SKILL.md`            |
+| add-component               | `.claude/skills/add-component/SKILL.md`               |
 | add-extension               | `.claude/skills/add-extension/SKILL.md`               |
 | add-feature                 | `.claude/skills/add-feature/SKILL.md`                 |
+| add-migration               | `.claude/skills/add-migration/SKILL.md`               |
+| add-tauri-command           | `.claude/skills/add-tauri-command/SKILL.md`           |
 | audit                       | `.claude/skills/audit/SKILL.md`                       |
 | audit-docs                  | `.claude/skills/audit-docs/SKILL.md`                  |
 | audit-security              | `.claude/skills/audit-security/SKILL.md`              |
