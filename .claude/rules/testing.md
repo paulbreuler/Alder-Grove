@@ -52,6 +52,11 @@ If you write implementation before tests, delete the implementation and start ov
 - Test RLS enforcement: `TenantTx` scoped queries should filter by workspace_id
 - Test cross-workspace rejection: inserts with wrong workspace_id should fail
 
+### Rust Test Module Conventions
+- Use `#[cfg(test)] mod tests` inside the source file for unit tests
+- Allow unwrap in test modules: `#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]`
+- Use `#[tokio::test]` for async tests
+
 ### Integration Test Patterns
 
 ```rust
@@ -93,6 +98,19 @@ let response = app.oneshot(request).await.unwrap();
 - Test critical user flows end-to-end
 - Test in the Tauri desktop context when possible
 - Keep E2E tests focused — prefer unit/integration tests for logic
+
+## Test Selectors
+
+Use `data-testid` attributes for test selectors (the Testing Library default).
+Never select by class name or CSS selector.
+
+```tsx
+// In component
+<button data-testid="persona-submit">Submit</button>
+
+// In test
+screen.getByTestId("persona-submit")
+```
 
 ## Naming Convention
 
