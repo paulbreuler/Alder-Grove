@@ -33,6 +33,8 @@ When a user invokes a slash-style command, load the matching file from `.claude/
 Codex discovers skills from `.agents/skills/*/SKILL.md`.
 Each generated skill file is a minimal wrapper around the canonical `.claude/skills/*/SKILL.md` source.
 
+- `add-extension` -> `.claude/skills/add-extension/SKILL.md`
+- `add-feature` -> `.claude/skills/add-feature/SKILL.md`
 - `audit` -> `.claude/skills/audit/SKILL.md`
 - `audit-docs` -> `.claude/skills/audit-docs/SKILL.md`
 - `audit-security` -> `.claude/skills/audit-security/SKILL.md`
@@ -45,6 +47,7 @@ Each generated skill file is a minimal wrapper around the canonical `.claude/ski
 - `commit` -> `.claude/skills/commit/SKILL.md`
 - `pr` -> `.claude/skills/pr/SKILL.md`
 - `red-team` -> `.claude/skills/red-team/SKILL.md`
+- `scaffold-entity` -> `.claude/skills/scaffold-entity/SKILL.md`
 
 ## Agent Roles
 

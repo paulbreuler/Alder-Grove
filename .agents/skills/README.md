@@ -7,6 +7,8 @@ Do not edit files in `.agents/skills/` by hand.
 
 | Skill                       | Canonical Source                                      |
 | --------------------------- | ----------------------------------------------------- |
+| add-extension               | `.claude/skills/add-extension/SKILL.md`               |
+| add-feature                 | `.claude/skills/add-feature/SKILL.md`                 |
 | audit                       | `.claude/skills/audit/SKILL.md`                       |
 | audit-docs                  | `.claude/skills/audit-docs/SKILL.md`                  |
 | audit-security              | `.claude/skills/audit-security/SKILL.md`              |
@@ -19,3 +21,4 @@ Do not edit files in `.agents/skills/` by hand.
 | commit                      | `.claude/skills/commit/SKILL.md`                      |
 | pr                          | `.claude/skills/pr/SKILL.md`                          |
 | red-team                    | `.claude/skills/red-team/SKILL.md`                    |
+| scaffold-entity             | `.claude/skills/scaffold-entity/SKILL.md`             |
