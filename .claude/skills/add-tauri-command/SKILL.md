@@ -37,7 +37,7 @@ domain types via `ts-rs`, never hand-written.
 | Tauri main (command registry)  | `crates/grove-tauri/src/main.rs`                     |
 | Domain types (Rust)            | `crates/grove-domain/src/*.rs`                       |
 | TypeScript type generation     | `crates/grove-ts-gen/src/main.rs`                    |
-| Generated TS types output      | `src/generated/types/`                               |
+| Generated TS types output      | `src/generated/`                                     |
 | Frontend feature adapters      | `src/features/<feature>/adapters/`                   |
 | Tauri Cargo.toml               | `crates/grove-tauri/Cargo.toml`                      |
 
@@ -109,7 +109,16 @@ pub async fn my_command(input: MyCommandInput) -> Result<MyCommandOutput, String
         name,
     })
 }
+```
 
+**Prerequisites:** Ensure `crates/grove-tauri/Cargo.toml` includes:
+- `tauri` with required features
+- `tokio` (for async tests)
+- `uuid` with `v7` feature (for test data)
+
+If missing, add them before proceeding.
+
+```rust
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -299,7 +308,7 @@ pnpm generate:types
 
 This runs `grove-ts-gen` which exports all types marked with
 `#[cfg_attr(feature = "ts", derive(ts_rs::TS))]` and `#[cfg_attr(feature = "ts", ts(export))]`
-to `src/generated/types/`.
+to `src/generated/`.
 
 **Never hand-write TypeScript type definitions for domain types.** If a type
 needs to be available in TypeScript, add the `ts-rs` derive to the Rust struct
@@ -318,11 +327,10 @@ directly in the hook file, mirroring the Rust structs.
 The hook wraps Tauri's `invoke` with typed parameters and return values.
 
 ```typescript
-import { useCallback } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 
 // Import generated types if using domain types:
-// import type { MyEntity } from '@/generated/types/MyEntity';
+// import type { MyEntity } from '@/generated/MyEntity';
 
 // Or define IPC-specific types inline:
 interface MyCommandInput {
@@ -335,9 +343,9 @@ interface MyCommandOutput {
 }
 
 export function useMyCommand() {
-  const execute = useCallback(async (input: MyCommandInput): Promise<MyCommandOutput> => {
+  async function execute(input: MyCommandInput): Promise<MyCommandOutput> {
     return invoke<MyCommandOutput>('my_command', { input });
-  }, []);
+  }
 
   return { execute };
 }
@@ -349,7 +357,8 @@ export function useMyCommand() {
   `useCreateWorkspace`)
 - File name: `use<CommandName>.ts` (e.g. `useGetPersonas.ts`)
 - Location: `src/features/<feature>/adapters/`
-- Use `useCallback` to stabilize the function reference
+- Define the function directly — React Compiler handles memoization (no
+  manual `useCallback`/`useMemo`)
 - Type the `invoke` call with the generic parameter: `invoke<ReturnType>(...)`
 - For commands with loading/error state, consider returning
   `{ execute, isLoading, error }` using `useState`
