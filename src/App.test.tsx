@@ -28,6 +28,10 @@ vi.mock('@paulbreuler/shell', () => ({
   Workbench: () => <div data-testid="workbench">Workbench</div>,
 }));
 
+vi.mock('./shell/bootstrap', () => ({
+  bootstrapShell: vi.fn(),
+}));
+
 function renderApp() {
   return render(
     <MemoryRouter>
@@ -69,5 +73,10 @@ describe('App', () => {
   it('does not render workbench when signed out', () => {
     renderApp();
     expect(screen.queryByTestId('workbench')).not.toBeInTheDocument();
+  });
+
+  it('calls bootstrapShell on module load', async () => {
+    const { bootstrapShell } = await import('./shell/bootstrap');
+    expect(bootstrapShell).toHaveBeenCalled();
   });
 });
