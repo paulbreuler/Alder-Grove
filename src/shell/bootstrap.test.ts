@@ -36,4 +36,20 @@ describe('bootstrapShell', () => {
 
     expect(mockActivate).toHaveBeenCalledTimes(1);
   });
+
+  it('filters extensions via isEnabled policy callback', async () => {
+    const { bootstrapShell } = await import('./bootstrap');
+    await bootstrapShell((id) => id !== 'grove.core');
+
+    // grove.core filtered out — nothing activated
+    expect(mockActivate).not.toHaveBeenCalled();
+  });
+
+  it('activates all extensions when isEnabled returns true', async () => {
+    const { bootstrapShell } = await import('./bootstrap');
+    await bootstrapShell(() => true);
+
+    expect(mockActivate).toHaveBeenCalledTimes(1);
+    expect(mockActivate.mock.calls[0][0].id).toBe('grove.core');
+  });
 });

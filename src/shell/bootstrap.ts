@@ -16,16 +16,36 @@ const groveCoreExtension: Extension = {
 
 let initialized = false;
 
+/** All first-party extensions, in activation order. */
+const extensions: Extension[] = [
+  groveCoreExtension,
+  // Future extensions added here:
+  // homeExtension,
+  // workspaceExtension,
+  // personasExtension,
+];
+
 /**
  * Initialize the Alder Shell for Grove.
  *
- * Activates the core extension (theme registration) and will be the
- * entry point for activating feature extensions in future cycles.
+ * Activates first-party extensions and registers their contributions
+ * with the shell. The core extension (theme) is always activated;
+ * feature extensions can be filtered via the `isEnabled` callback.
+ *
+ * @param isEnabled - Optional policy callback. Called with each extension's
+ *   `id`; return `false` to skip activation (e.g., tier-based feature gating).
+ *   Defaults to `() => true` (all extensions active).
  *
  * Idempotent: safe to call multiple times (only activates once).
  */
-export async function bootstrapShell(): Promise<void> {
+export async function bootstrapShell(
+  isEnabled: (extensionId: string) => boolean = () => true,
+): Promise<void> {
   if (initialized) return;
   initialized = true;
-  await globalExtensionRegistry.activate(groveCoreExtension);
+
+  const enabled = extensions.filter((ext) => isEnabled(ext.id));
+  await Promise.all(
+    enabled.map((ext) => globalExtensionRegistry.activate(ext)),
+  );
 }
