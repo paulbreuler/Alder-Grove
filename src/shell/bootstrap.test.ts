@@ -14,13 +14,16 @@ describe('bootstrapShell', () => {
     vi.resetModules();
   });
 
-  it('activates the grove core extension', async () => {
+  it('activates core + feature extensions', async () => {
     const { bootstrapShell } = await import('./bootstrap');
     await bootstrapShell();
 
-    expect(mockActivate).toHaveBeenCalledTimes(1);
-    const extension = mockActivate.mock.calls[0][0];
-    expect(extension.id).toBe('grove.core');
+    // core (1) + 3 feature extensions (home, user, settings)
+    expect(mockActivate).toHaveBeenCalledTimes(4);
+    expect(mockActivate.mock.calls[0][0].id).toBe('grove.core');
+    expect(mockActivate.mock.calls[1][0].id).toBe('grove.home');
+    expect(mockActivate.mock.calls[2][0].id).toBe('grove.user');
+    expect(mockActivate.mock.calls[3][0].id).toBe('grove.settings');
   });
 
   it('is idempotent — second call does not activate again', async () => {
@@ -28,10 +31,10 @@ describe('bootstrapShell', () => {
     await bootstrapShell();
     await bootstrapShell();
 
-    expect(mockActivate).toHaveBeenCalledTimes(1);
+    expect(mockActivate).toHaveBeenCalledTimes(4);
   });
 
-  it('always activates core even when isEnabled rejects it', async () => {
+  it('always activates core even when isEnabled rejects all features', async () => {
     const { bootstrapShell } = await import('./bootstrap');
     await bootstrapShell(() => false);
 
@@ -40,11 +43,13 @@ describe('bootstrapShell', () => {
     expect(mockActivate.mock.calls[0][0].id).toBe('grove.core');
   });
 
-  it('activates all extensions when isEnabled returns true', async () => {
+  it('filters feature extensions via isEnabled', async () => {
     const { bootstrapShell } = await import('./bootstrap');
-    await bootstrapShell(() => true);
+    await bootstrapShell((id) => id === 'grove.home');
 
-    expect(mockActivate).toHaveBeenCalledTimes(1);
+    // core (always) + home (enabled) = 2
+    expect(mockActivate).toHaveBeenCalledTimes(2);
     expect(mockActivate.mock.calls[0][0].id).toBe('grove.core');
+    expect(mockActivate.mock.calls[1][0].id).toBe('grove.home');
   });
 });

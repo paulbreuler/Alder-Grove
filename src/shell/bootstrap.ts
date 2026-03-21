@@ -1,10 +1,12 @@
 import type { Extension } from '@paulbreuler/shell';
 import { globalExtensionRegistry } from '@paulbreuler/shell';
 import { GROVE_DARK } from './themes';
+import { homeExtension } from '../extensions/home/extension';
+import { userExtension } from '../extensions/user/extension';
+import { settingsExtension } from '../extensions/settings/extension';
 
 /**
  * Core extension that registers Grove's theme and global contributions.
- * Future extensions (Home, Workspace, etc.) will be activated separately.
  */
 const groveCoreExtension: Extension = {
   id: 'grove.core',
@@ -14,12 +16,11 @@ const groveCoreExtension: Extension = {
   },
 };
 
-/** All first-party feature extensions (excluding core). */
+/** All first-party feature extensions (excluding core), in activation order. */
 const featureExtensions: Extension[] = [
-  // Future extensions added here:
-  // homeExtension,
-  // workspaceExtension,
-  // personasExtension,
+  homeExtension,
+  userExtension,
+  settingsExtension,
 ];
 
 let bootstrapPromise: Promise<void> | null = null;
