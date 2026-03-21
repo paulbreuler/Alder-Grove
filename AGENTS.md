@@ -13,6 +13,8 @@ Path-specific guidance lives in `.claude/rules/*.md`.
 When a user invokes a slash-style command, load the matching file from `.claude/commands/`.
 
 - `/audit` -> `.claude/commands/audit.md`
+- `/audit-tests` -> `.claude/commands/audit-tests.md`
+- `/audit-tokens` -> `.claude/commands/audit-tokens.md`
 - `/check-architecture` -> `.claude/commands/check-architecture.md`
 - `/check-backend-architecture` -> `.claude/commands/check-backend-architecture.md`
 - `/check-frontend-architecture` -> `.claude/commands/check-frontend-architecture.md`
@@ -26,6 +28,8 @@ Codex discovers skills from `.agents/skills/*/SKILL.md`.
 Each generated skill file is a minimal wrapper around the canonical `.claude/skills/*/SKILL.md` source.
 
 - `audit` -> `.claude/skills/audit/SKILL.md`
+- `audit-tests` -> `.claude/skills/audit-tests/SKILL.md`
+- `audit-tokens` -> `.claude/skills/audit-tokens/SKILL.md`
 - `check-architecture` -> `.claude/skills/check-architecture/SKILL.md`
 - `check-backend-architecture` -> `.claude/skills/check-backend-architecture/SKILL.md`
 - `check-frontend-architecture` -> `.claude/skills/check-frontend-architecture/SKILL.md`

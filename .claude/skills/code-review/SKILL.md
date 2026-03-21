@@ -50,9 +50,27 @@ Rust backend review criteria:
    include org_id WHERE clauses (SECURITY GAP pre-auth — see api rules)
 5. Error handling — ApiError implements RFC 9457 with application/problem+json
 6. Pool safety — after_release resets tenant context
-7. Clippy clean — cargo clippy -p <crate> -- -D warnings
+7. Clippy clean — cargo clippy --workspace -- -D warnings
 8. Documented architecture rules in .claude/rules/api.md are HARD requirements,
    not suggestions. Violations are FAIL, not "acceptable for v1."
+
+TDD Compliance Assessment:
+- Analyze git log: `git log --name-only --diff-filter=AM main...HEAD`
+- Were test files (*_test.rs, *.test.ts, tests/) modified before/alongside implementation?
+- Confidence: HIGH (test-first evidence), MEDIUM (concurrent), LOW (impl-first or missing)
+
+Test Quality Assessment:
+- Behavior-based assertions (observable outputs, not internal state)?
+- Negative tests (error paths, invalid inputs, edge cases)?
+- Mock boundaries at adapter layer only (not internal functions)?
+- No suppression without justification (#[allow] / #[ignore] needs comment)?
+
+Severity Triage (categorize ALL findings):
+- CRITICAL: security, data loss, architecture violations, broken tenant isolation
+- HIGH: missing tests, unwrap() in production, missing auth, boundary violations
+- MEDIUM: style, missing docs, suboptimal patterns
+- LOW: naming suggestions, minor refactoring
+Every finding must include: file:line, what, why, fix
 ```
 
 ## Frontend Review Criteria
@@ -70,6 +88,24 @@ React/TypeScript frontend review criteria:
 7. Error boundaries — proper error handling in UI
 8. Documented architecture rules in .claude/rules/frontend.md are HARD
    requirements. Violations are FAIL.
+
+TDD Compliance Assessment:
+- Analyze git log: `git log --name-only --diff-filter=AM main...HEAD`
+- Were test files (*.test.ts, *.test.tsx) modified before/alongside implementation?
+- Confidence: HIGH (test-first evidence), MEDIUM (concurrent), LOW (impl-first or missing)
+
+Test Quality Assessment:
+- Behavior-based assertions (user interactions and rendered output, not internal state)?
+- Negative tests (error states, empty data, invalid input)?
+- Zustand store tests assert on observable behavior, not store internals?
+- No suppression without justification?
+
+Severity Triage (categorize ALL findings):
+- CRITICAL: security, architecture violations, broken token compliance
+- HIGH: missing tests, deprecated React patterns, cross-feature imports
+- MEDIUM: style, missing types, suboptimal patterns
+- LOW: naming suggestions, minor refactoring
+Every finding must include: file:line, what, why, fix
 ```
 
 ## Shared Criteria (always include)
@@ -106,3 +142,20 @@ Commit range: main..HEAD
 - For full-stack changes, dispatch **two** parallel reviews (backend + frontend)
 - Always search for a design spec before dispatching
 - If superpowers:code-reviewer is not available, STOP and inform the user
+
+## Report Format Additions
+
+In addition to scope-specific findings, the reviewer should include:
+
+### TDD Compliance
+
+```
+Confidence: [HIGH / MEDIUM / LOW]
+Evidence: [summary of git log analysis — test vs impl ordering]
+```
+
+### Positive Highlights
+
+```
+[Good patterns observed — reinforce what's working]
+```

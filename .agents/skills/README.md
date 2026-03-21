@@ -8,6 +8,8 @@ Do not edit files in `.agents/skills/` by hand.
 | Skill                       | Canonical Source                                      |
 | --------------------------- | ----------------------------------------------------- |
 | audit                       | `.claude/skills/audit/SKILL.md`                       |
+| audit-tests                 | `.claude/skills/audit-tests/SKILL.md`                 |
+| audit-tokens                | `.claude/skills/audit-tokens/SKILL.md`                |
 | check-architecture          | `.claude/skills/check-architecture/SKILL.md`          |
 | check-backend-architecture  | `.claude/skills/check-backend-architecture/SKILL.md`  |
 | check-frontend-architecture | `.claude/skills/check-frontend-architecture/SKILL.md` |
