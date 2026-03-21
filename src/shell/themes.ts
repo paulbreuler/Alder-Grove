@@ -9,6 +9,10 @@ import type { ThemeDefinition } from '@paulbreuler/shell';
  * panels) inherits Grove's visual identity.
  *
  * Source of truth for hex values: src/app.css :root declarations.
+ *
+ * NOTE: Hex values are required here (not var(--grove-*) references) because
+ * the shell theme store applies these as inline style properties on :root.
+ * Inline styles need resolved values. See themes.test.ts for drift detection.
  */
 export const GROVE_DARK: ThemeDefinition = {
   id: 'grove-dark',

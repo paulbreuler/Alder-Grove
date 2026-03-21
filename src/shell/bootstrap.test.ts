@@ -2,17 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock the shell's globalExtensionRegistry
 const mockActivate = vi.fn().mockResolvedValue(undefined);
-vi.mock('@paulbreuler/shell', async () => {
-  const actual = await vi.importActual<typeof import('@paulbreuler/shell')>(
-    '@paulbreuler/shell',
-  );
-  return {
-    ...actual,
-    globalExtensionRegistry: {
-      activate: mockActivate,
-    },
-  };
-});
+vi.mock('@paulbreuler/shell', () => ({
+  globalExtensionRegistry: {
+    activate: mockActivate,
+  },
+}));
 
 describe('bootstrapShell', () => {
   beforeEach(() => {
@@ -37,12 +31,13 @@ describe('bootstrapShell', () => {
     expect(mockActivate).toHaveBeenCalledTimes(1);
   });
 
-  it('filters extensions via isEnabled policy callback', async () => {
+  it('always activates core even when isEnabled rejects it', async () => {
     const { bootstrapShell } = await import('./bootstrap');
-    await bootstrapShell((id) => id !== 'grove.core');
+    await bootstrapShell(() => false);
 
-    // grove.core filtered out — nothing activated
-    expect(mockActivate).not.toHaveBeenCalled();
+    // Core is always activated regardless of isEnabled
+    expect(mockActivate).toHaveBeenCalledTimes(1);
+    expect(mockActivate.mock.calls[0][0].id).toBe('grove.core');
   });
 
   it('activates all extensions when isEnabled returns true', async () => {

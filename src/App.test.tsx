@@ -29,7 +29,7 @@ vi.mock('@paulbreuler/shell', () => ({
 }));
 
 vi.mock('./shell/bootstrap', () => ({
-  bootstrapShell: vi.fn(),
+  bootstrapShell: vi.fn().mockResolvedValue(undefined),
 }));
 
 function renderApp() {

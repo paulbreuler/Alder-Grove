@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { GROVE_DARK } from './themes';
 
@@ -38,6 +40,40 @@ describe('GROVE_DARK', () => {
     for (const [key, value] of Object.entries(GROVE_DARK.tokens)) {
       expect(value, `token "${key}" should be non-empty`).toBeTruthy();
       expect(typeof value, `token "${key}" should be string`).toBe('string');
+    }
+  });
+
+  // Token mapping: --app-* suffix -> --grove-* CSS variable name
+  const TOKEN_TO_CSS_VAR: Record<string, string> = {
+    'bg-app': '--grove-surface-base',
+    'bg-surface': '--grove-surface-elevated',
+    'bg-raised': '--grove-surface-sunken',
+    'bg-elevated': '--grove-surface-overlay',
+    'bg-overlay': '--grove-surface-overlay',
+    'text-primary': '--grove-text-primary',
+    'text-secondary': '--grove-text-secondary',
+    'text-muted': '--grove-text-muted',
+    'border-default': '--grove-border-default',
+    'border-subtle': '--grove-border-subtle',
+    'border-emphasis': '--grove-border-strong',
+    'brand-primary': '--grove-accent',
+    'brand-primary-hover': '--grove-accent-hover',
+    'ring': '--grove-accent',
+  };
+
+  it('token values match --grove-* declarations in app.css', () => {
+    const css = readFileSync(resolve(__dirname, '../app.css'), 'utf-8');
+
+    for (const [appKey, groveVar] of Object.entries(TOKEN_TO_CSS_VAR)) {
+      const regex = new RegExp(`${groveVar}:\\s*([^;]+);`);
+      const match = css.match(regex);
+      expect(match, `${groveVar} not found in app.css`).toBeTruthy();
+
+      const cssValue = match![1].trim();
+      const themeValue = GROVE_DARK.tokens[appKey];
+      expect(themeValue, `token "${appKey}" should match ${groveVar}`).toBe(
+        cssValue,
+      );
     }
   });
 });

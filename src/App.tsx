@@ -4,7 +4,9 @@ import { bootstrapShell } from './shell/bootstrap';
 
 // Initialize shell extensions and theme before first render.
 // This is idempotent — safe under React StrictMode and HMR.
-bootstrapShell();
+void bootstrapShell().catch((error: unknown) => {
+  console.error('[Grove] Shell bootstrap failed:', error);
+});
 
 /**
  * Root application component.
