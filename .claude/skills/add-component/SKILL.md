@@ -27,6 +27,13 @@ Before creating anything, search for an existing solution:
 If an existing primitive or component covers the need, STOP and recommend
 composition instead of creation. Only proceed if nothing fits.
 
+**Prerequisites:** This skill references packages that may need to be installed:
+- `class-variance-authority` — for style variants (install: `pnpm add class-variance-authority`)
+- `@base-ui/react` — for UI primitives (install: `pnpm add @base-ui/react`)
+- `motion` + `motion-plus` — for animations (see `.claude/rules/motion.md` for setup)
+
+Skip checks for packages not yet installed.
+
 ## Step 1: Gather Requirements
 
 Collect these before writing any code:
@@ -236,16 +243,16 @@ function AnimatedComponent({ children }: { children: React.ReactNode }) {
   padding: var(--grove-space-3);
   border-radius: var(--grove-radius-md);
   font-family: var(--grove-font-sans);
-  font-size: var(--grove-text-sm);
-  color: var(--grove-color-text-primary);
-  background: var(--grove-color-surface);
-  border: 1px solid var(--grove-color-border);
+  font-size: var(--grove-font-size-sm);
+  color: var(--grove-text-primary);
+  background: var(--grove-surface-base);
+  border: 1px solid var(--grove-border-default);
   box-shadow: var(--grove-shadow-sm);
   transition: box-shadow 0.15s ease;
 }
 
 .grove-component-base:focus-visible {
-  outline: 2px solid var(--grove-color-focus);
+  outline: 2px solid var(--grove-accent);
   outline-offset: 2px;
 }
 ```
@@ -277,7 +284,7 @@ export { Name } from "./ui/<Name>";
 | `src/features/<feature>/domain/`        | Types the hooks depend on              |
 | `src/features/shared/`                  | Shared utilities and types             |
 | `package.json`                          | Check available dependencies           |
-| `src/index.css`                         | Global `--grove-*` token definitions   |
+| `src/app.css`                           | Global `--grove-*` token definitions   |
 
 ## Checklist
 
